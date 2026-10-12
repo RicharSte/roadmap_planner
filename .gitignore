@@ -11,3 +11,9 @@ CLAUDE.local.md
 coverage/
 .opencode/node_modules/
 .reviews/
+
+# Rust extras
+**/*.rs.bk
+*.pdb
+rustc-ice-*.txt
+**/mutants.out*/

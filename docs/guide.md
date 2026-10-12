@@ -14,14 +14,10 @@
 | Skills для Claude (`caveman`, `grilling`, `grill-me`, `handoff`, `investigate-first`, `verify-and-stop`) | ✅ симлинки в `~/.claude/skills` |
 | Проектные skills `tdd`, `tauri-v2` | ✅ `.claude/skills/` (видят оба инструмента) |
 | `opencode.json`, `.claude/settings.json`, агент `scout` | ✅ проходят официальные JSON-схемы |
-| **git-репозиторий** | ❌ нет — без него не работает ревью кода (шаг 4) |
+| git-репозиторий | ✅ ветка `master`, remote `origin` → GitHub `RicharSte/roadmap_planner` |
 
-Перед первой задачей выполни (git-команды запускаешь ты):
-
-```bash
-cd /Users/ns/prodjects/roadmap_proj
-git init -b main && git add -A && git commit -m "chore: agent workspace setup"
-```
+Git: коммит после каждой задачи делаешь ты (агент только предлагает сообщение `feat(T-XXX): ...`).
+`git push` агентам запрещён — отправляешь на GitHub сам.
 
 Быстрая проверка в самих инструментах (одна минута):
 
@@ -57,7 +53,7 @@ rm ~/.claude/skills/grill-with-docs
 | 3. Реализация | Запускаешь `/task-build T-XXX` (обычно в OpenCode) | Делает ровно план, пишет тесты, запускает проверки |
 | 4. Объяснение | — | Пишет `docs/reports/T-XXX.md` и открывает изменения кода в Plannotator |
 | 4a. Ревью кода | Читаешь отчёт и diff, задаёшь вопросы прямо на строках кода, **Approve**, «готово» | Отвечает на замечания и правит (до 2 кругов) |
-| 5. Передача | Делаешь коммит по предложенному сообщению | Отмечает задачу `done`, обновляет `docs/handoff.md`: следующая задача, инструмент, команда |
+| 5. Передача | Делаешь коммит по предложенному сообщению и при желании `git push` | Отмечает задачу `done`, обновляет `docs/handoff.md`: следующая задача, инструмент, команда |
 
 Новую задачу лучше начинать в **новой сессии** (`/clear` в Claude, новая сессия в OpenCode).
 
