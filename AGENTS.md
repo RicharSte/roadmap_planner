@@ -87,8 +87,10 @@ implementation, review, or debugging. Details: `docs/agents/budget-policy.md`.
 
 ## Commands
 
-TBD after scaffold. Expected (verify against `package.json` / `Cargo.toml`):
+Verified against `package.json` and `src-tauri/Cargo.toml` after T-001 scaffold.
+ESLint/Prettier/Vitest scripts (`pnpm lint`, `pnpm format`, `pnpm format:check`,
+`pnpm test`) подключаются в T-002.
 
-- Dev: `pnpm tauri dev` · Build: `pnpm tauri build`
-- Frontend: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test`
-- Rust (in `src-tauri/`): `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`
+- Dev: `pnpm tauri dev` · Build: `pnpm tauri build` · Preview (Vite only): `pnpm preview`
+- Frontend: `pnpm typecheck` (`tsc --noEmit`), `pnpm build` (`tsc && vite build`), `pnpm dev` (Vite dev server, http://localhost:1420)
+- Rust (in `src-tauri/`): `cargo check`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`

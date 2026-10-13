@@ -1,10 +1,10 @@
 # Handoff
 <!-- Перезаписывается агентом в конце каждой фазы. Стиль: caveman full. -->
 
-- Done: —
-- Task: T-000 (toolchain) → done by user
-- Status: next = T-001, plan needed
+- Done: T-001 (scaffold Tauri 2) code-review approved
+- Task: T-002 (tooling: ESLint/Prettier/Vitest + RTL)
+- Status: next = T-002, plan needed
 - Next tool: OpenCode, model Kimi K2.7 Code
-- Next command: `/task-plan T-001`
+- Next command: `/task-plan T-002`
 - Blockers: none
-- Notes: —
+- Notes: scaffold готов, cargo fmt/clippy/test зелёные, typecheck зелёный; lint+vitest ждут T-002
