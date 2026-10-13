@@ -16,10 +16,10 @@ Implement task $ARGUMENTS.
 6. Set backlog status `code-review`. Gate 2 — requires a git repo; if there is none, stop and ask the user to run `git init`.
    Run exactly (`git add -N .` only makes new files visible in the diff, it stages nothing):
    `git add -N . && mkdir -p .reviews && rm -f .reviews/$ARGUMENTS-code.json && (nohup plannotator review --json > .reviews/$ARGUMENTS-code.json 2>/dev/null &)`
-   Then say «Ревью кода открыто в браузере. Отчёт: docs/reports/$ARGUMENTS.md. Напиши «готово», когда закончишь.» and stop.
-7. On «готово»: open `.reviews/$ARGUMENTS-code.json` with your file-read tool (not `cat`). Field `decision`:
+   Then say «Ревью кода открыто в браузере. Отчёт: docs/reports/$ARGUMENTS.md. Оставь комментарии в Plannotator и нажми Send Feedback. Если эта сессия уже не ждёт автоматически, вернись сюда и попроси обработать feedback по задаче $ARGUMENTS.» and stop.
+7. On the next user message about review completion or feedback: open `.reviews/$ARGUMENTS-code.json` with your file-read tool (not `cat`). Field `decision`:
    - `approved` → backlog `done`; tick items in `docs/mvp-done.md` that now really pass;
      overwrite `docs/handoff.md` for the next `todo` task; suggest a commit message `feat($ARGUMENTS): ...`.
      Do not commit unless the user asks. Stop.
    - `annotated` → answer questions, fix, update the report, rerun gate 2. Max 2 rounds, then ask one concrete question.
-   - `dismissed` / empty file → ask the user.
+   - `dismissed` / empty file / file missing → explain that Plannotator feedback was not delivered yet; ask the user to click Send Feedback or explicitly ask to re-check review state.
