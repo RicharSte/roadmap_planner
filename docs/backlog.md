@@ -8,7 +8,7 @@ Plan / Build: **C** = Claude Code, **K** = OpenCode + Kimi K2.7 Code, **M** = Op
 | ID | Task | Plan | Build | Status |
 |---|---|---|---|---|
 | T-000 | Toolchain: Rust, pnpm, Xcode CLT, `claude`, `opencode` | — | user | done |
-| T-001 | Scaffold Tauri 2 app, React + TS template (`pnpm create tauri-app`), dev build runs | M | M | todo |
+| T-001 | Scaffold Tauri 2 app, React + TS template (`pnpm create tauri-app`), dev build runs | M | M | done |
 | T-002 | ESLint + Prettier + Vitest + RTL, package.json scripts; real **Commands** in AGENTS.md | C | K | todo |
 | T-003 | JSON schema + `.md` location → ADR 0005 | C | — | done |
 | T-004 | `src/domain/`: types, parent index, create/rename/delete/move node, validation (ADR 0005) + tests | C | K | todo |

@@ -23,7 +23,7 @@
 
 ## Качество (минимум)
 - [ ] `pnpm typecheck`, `pnpm lint`, `pnpm test` проходят
-- [ ] `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test` проходят
-- [ ] Все Rust-функции имеют комментарии `///` на русском
+- [x] `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test` проходят
+- [x] Все Rust-функции имеют комментарии `///` на русском
 
 Всё, чего нет в этом списке, — не MVP. Идеи → `docs/later.md`.
