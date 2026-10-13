@@ -5,6 +5,7 @@
 A local-first desktop application for macOS and Windows for creating and editing roadmap projects.
 
 A roadmap project is a user-owned folder on disk containing:
+
 - a main JSON file that stores the roadmap structure;
 - Markdown (`.md`) files used as node descriptions.
 
@@ -17,6 +18,7 @@ Personal use by a single user. No teams, no collaboration.
 ## MVP goals
 
 The first version allows the user to:
+
 - create a new roadmap project;
 - open an existing roadmap project by selecting its folder;
 - work with one roadmap project at a time;
@@ -32,6 +34,7 @@ The first version allows the user to:
 ### Roadmap shape
 
 In the MVP the roadmap is a tree:
+
 - each node has at most one parent;
 - nodes have parent/child relationships;
 - the visual layout is generated automatically.
@@ -85,11 +88,13 @@ The architecture must allow the internal model to evolve into a directed graph l
 ## Safety and error handling
 
 In scope:
+
 - confirmation before destructive deletion where appropriate;
 - safe (atomic) writes to avoid corrupting JSON or Markdown files;
 - clear, user-readable error messages.
 
 Out of scope for MVP:
+
 - collaboration / multi-user;
 - multiple open projects;
 - manual node positioning;
@@ -102,6 +107,7 @@ Out of scope for MVP:
 ## Future-facing constraints
 
 Do not block:
+
 - tree → directed graph;
 - import/export of project folders (important for v2);
 - richer interoperability around the JSON + Markdown format.

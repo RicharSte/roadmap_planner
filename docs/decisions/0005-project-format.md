@@ -1,18 +1,24 @@
 # 0005. Project format v1: childrenIds-only links, descriptions/<id>.md
+
 Status: accepted
 Date: 2026-10-13
 
 ## Context
+
 Tree in MVP, directed graph later. Avoid storing the same link twice. Keep JSON human-readable.
 
 ## Decision
+
 Project folder:
+
 ```
 <project>/
   roadmap.json           # structure, source of truth
   descriptions/<id>.md   # node descriptions, created by the app
 ```
+
 `roadmap.json` (v1):
+
 ```json
 {
   "version": 1,
@@ -39,7 +45,9 @@ Project folder:
   }
 }
 ```
+
 Rules:
+
 - Links are stored only in the parent's ordered `childrenIds`. `rootIds` lists top-level nodes in order.
 - `parentId` is NOT stored; `src/domain/` derives a parent index on load (brief field kept in memory).
 - `title` is the human-readable name; file names never depend on it.
@@ -53,6 +61,7 @@ Validation on load (v1): every id in `childrenIds`/`rootIds` exists; each node h
 parent; a node is either in `rootIds` or has a parent; no cycles; paths stay inside `descriptions/`.
 
 ## Consequences
+
 - No duplicated link data → no consistency repair.
 - Graph migration (v2): allow multiple parents by relaxing validation (keep cycle check);
   format stays the same. Bump `version` only if fields change.

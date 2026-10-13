@@ -2,11 +2,11 @@
 
 Task loop steps: `/task-plan`, `/task-build`, `/task-next` commands. User guide: `docs/guide.md`.
 
-| Code in backlog | Tool / model | Use for |
-|---|---|---|
-| **C** | Claude Code (Pro), Sonnet by default; Opus only if the user asks | Plans for architecture, data, Rust, storage; `/review-diff` for risky diffs; hard bugs |
-| **K** | OpenCode + Kimi K2.7 Code | Implementing plans; plans for simple UI tasks |
-| **M** | OpenCode + MiniMax M3 or weaker | Scaffold, small UI, docs, scripts, simple fixes |
+| Code in backlog | Tool / model                                                     | Use for                                                                                |
+| --------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **C**           | Claude Code (Pro), Sonnet by default; Opus only if the user asks | Plans for architecture, data, Rust, storage; `/review-diff` for risky diffs; hard bugs |
+| **K**           | OpenCode + Kimi K2.7 Code                                        | Implementing plans; plans for simple UI tasks                                          |
+| **M**           | OpenCode + MiniMax M3 or weaker                                  | Scaffold, small UI, docs, scripts, simple fixes                                        |
 
 ## Escalation
 

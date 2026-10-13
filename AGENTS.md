@@ -87,10 +87,20 @@ implementation, review, or debugging. Details: `docs/agents/budget-policy.md`.
 
 ## Commands
 
-Verified against `package.json` and `src-tauri/Cargo.toml` after T-001 scaffold.
-ESLint/Prettier/Vitest scripts (`pnpm lint`, `pnpm format`, `pnpm format:check`,
-`pnpm test`) подключаются в T-002.
+Verified against `package.json` and `src-tauri/Cargo.toml`.
 
 - Dev: `pnpm tauri dev` · Build: `pnpm tauri build` · Preview (Vite only): `pnpm preview`
-- Frontend: `pnpm typecheck` (`tsc --noEmit`), `pnpm build` (`tsc && vite build`), `pnpm dev` (Vite dev server, http://localhost:1420)
-- Rust (in `src-tauri/`): `cargo check`, `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`
+- Frontend:
+  - `pnpm dev` — Vite dev server, http://localhost:1420
+  - `pnpm build` — `tsc && vite build`
+  - `pnpm preview` — Vite preview
+  - `pnpm typecheck` — `tsc --noEmit`
+  - `pnpm lint` — ESLint, `--max-warnings 0`
+  - `pnpm format` — Prettier write
+  - `pnpm format:check` — Prettier check
+  - `pnpm test` — Vitest, один прогон
+- Rust (в каталоге `src-tauri/`):
+  - `cargo check`
+  - `cargo fmt --check`
+  - `cargo clippy --all-targets -- -D warnings`
+  - `cargo test`
