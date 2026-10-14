@@ -133,6 +133,61 @@ impl ProjectState {
         Ok(())
     }
 
+    /// Создаёт новый проект в папке-кандидате вида `Empty`.
+    ///
+    /// Проверяет `pending`, повторно проверяет пустоту папки (файлы могли
+    /// появиться после выбора в диалоге), валидирует JSON и только потом
+    /// создаёт `descriptions/` и атомарно записывает `roadmap.json`.
+    /// После успеха кандидат становится открытым проектом (`root`).
+    ///
+    /// # Ошибки
+    /// - `NO_PENDING_PROJECT` — кандидат не выбран.
+    /// - `PENDING_NOT_EMPTY` — кандидат является проектом, а не пустой папкой.
+    /// - `FOLDER_NOT_EMPTY` — папка перестала быть пустой после выбора.
+    /// - `INVALID_JSON` — содержимое не является валидным JSON; файл не трогается.
+    /// - Ошибки создания папки или записи передаются без изменений.
+    pub fn create(&mut self, content: &str) -> Result<(), AppError> {
+        let dir = {
+            let pending = self
+                .pending
+                .as_ref()
+                .ok_or_else(|| AppError::new("NO_PENDING_PROJECT", "no project is pending"))?;
+
+            match pending.view {
+                PendingView::Roadmap => {
+                    return Err(AppError::new(
+                        "PENDING_NOT_EMPTY",
+                        "selected folder already contains a project",
+                    ));
+                }
+                PendingView::Empty => {}
+            }
+
+            if has_visible_files(&pending.dir)? {
+                return Err(AppError::new(
+                    "FOLDER_NOT_EMPTY",
+                    "folder is no longer empty",
+                ));
+            }
+
+            if serde_json::from_str::<serde_json::Value>(content).is_err() {
+                return Err(AppError::new("INVALID_JSON", "content is not valid JSON"));
+            }
+
+            pending.dir.clone()
+        };
+
+        let descriptions_dir = dir.join("descriptions");
+        fs::create_dir(&descriptions_dir)
+            .map_err(|e| AppError::io(format!("cannot create descriptions directory: {e}")))?;
+
+        write_inside(&dir, "roadmap.json", content.as_bytes())?;
+
+        self.pending.take();
+        self.root = Some(dir);
+        Ok(())
+    }
+
     /// Атомарно записывает `content` в файл описания внутри открытого проекта.
     ///
     /// # Ошибки
@@ -204,21 +259,7 @@ pub fn read_roadmap(dir: &Path) -> Result<String, AppError> {
         ));
     }
 
-    let mut has_visible_files = false;
-    for entry in
-        fs::read_dir(dir).map_err(|e| AppError::io(format!("cannot read directory: {e}")))?
-    {
-        let entry = entry.map_err(|e| AppError::io(format!("cannot read directory entry: {e}")))?;
-        let name = entry.file_name();
-        if let Some(first) = name.to_string_lossy().chars().next()
-            && first != '.'
-        {
-            has_visible_files = true;
-            break;
-        }
-    }
-
-    if !has_visible_files {
+    if !has_visible_files(dir)? {
         return Err(AppError::new(
             "EMPTY_FOLDER",
             "folder is empty or contains only hidden files",
@@ -254,6 +295,28 @@ pub fn read_roadmap(dir: &Path) -> Result<String, AppError> {
             AppError::io(format!("cannot read roadmap.json: {e}"))
         }
     })
+}
+
+/// Проверяет, есть ли в папке видимые файлы.
+///
+/// Скрытые файлы (начинающиеся с `.`) игнорируются, потому что системные
+/// файлы вроде `.DS_Store` не делают папку проектом.
+///
+/// # Ошибки
+/// - `IO_ERROR` — не удалось прочитать содержимое папки.
+fn has_visible_files(dir: &Path) -> Result<bool, AppError> {
+    for entry in
+        fs::read_dir(dir).map_err(|e| AppError::io(format!("cannot read directory: {e}")))?
+    {
+        let entry = entry.map_err(|e| AppError::io(format!("cannot read directory entry: {e}")))?;
+        let name = entry.file_name();
+        if let Some(first) = name.to_string_lossy().chars().next()
+            && first != '.'
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// Открывает диалог выбора папки, запоминает кандидат и возвращает
@@ -335,6 +398,26 @@ pub fn save_roadmap(
     content: String,
 ) -> Result<(), AppError> {
     state.lock().unwrap().save_roadmap(&content)
+}
+
+/// Создаёт новый проект в пустой папке-кандидате.
+///
+/// Кандидат должен быть выбран через `open_project`, который оставляет
+/// пустую папку как `PendingView::Empty`. После успеха проект считается
+/// открытым и `commit_project` не нужен.
+///
+/// # Ошибки
+/// - `NO_PENDING_PROJECT` — кандидат не выбран.
+/// - `PENDING_NOT_EMPTY` — кандидат уже является проектом.
+/// - `FOLDER_NOT_EMPTY` — папка перестала быть пустой.
+/// - `INVALID_JSON` — содержимое не является валидным JSON.
+/// - Ошибки записи передаются без изменений.
+#[tauri::command]
+pub fn create_project(
+    state: State<'_, Mutex<ProjectState>>,
+    content: String,
+) -> Result<(), AppError> {
+    state.lock().unwrap().create(&content)
 }
 
 /// Записывает файл описания в открытый проект атомарно.
@@ -613,5 +696,69 @@ mod tests {
 
         state.write_description("descriptions/n_a.md", "").unwrap();
         assert_eq!(fs::read(dir.join("descriptions/n_a.md")).unwrap(), b"");
+    }
+
+    /// `create` без кандидата возвращает `NO_PENDING_PROJECT`.
+    #[test]
+    fn create_without_pending_fails() {
+        let mut state = ProjectState::new();
+        let err = state.create(r#"{"version":1}"#).unwrap_err();
+        assert_eq!(err.code, "NO_PENDING_PROJECT");
+    }
+
+    /// `create` с кандидатом вида `Roadmap` возвращает `PENDING_NOT_EMPTY`.
+    #[test]
+    fn create_roadmap_pending_fails() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), r#"{"version":1}"#).unwrap();
+        state.set_pending(dir, PendingView::Roadmap);
+        let err = state.create(r#"{"version":1}"#).unwrap_err();
+        assert_eq!(err.code, "PENDING_NOT_EMPTY");
+    }
+
+    /// `create` в папке, ставшей непустой, возвращает `FOLDER_NOT_EMPTY`.
+    #[test]
+    fn create_non_empty_folder_fails() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        state.set_pending(dir.clone(), PendingView::Empty);
+        fs::write(dir.join("readme.txt"), "x").unwrap();
+
+        let err = state.create(r#"{"version":1}"#).unwrap_err();
+        assert_eq!(err.code, "FOLDER_NOT_EMPTY");
+        assert!(!dir.join("roadmap.json").exists());
+    }
+
+    /// Невалидный JSON не создаёт ни файла, ни папки `descriptions/`.
+    #[test]
+    fn create_rejects_invalid_json() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        state.set_pending(dir.clone(), PendingView::Empty);
+
+        let err = state.create("{").unwrap_err();
+        assert_eq!(err.code, "INVALID_JSON");
+        assert!(!dir.join("roadmap.json").exists());
+        assert!(!dir.join("descriptions").exists());
+    }
+
+    /// Успешное создание проекта записывает файл и папку, и делает папку `root`.
+    #[test]
+    fn create_succeeds() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        state.set_pending(dir.clone(), PendingView::Empty);
+
+        let content = r#"{"version":1,"rootIds":[],"nodes":{}}"#;
+        state.create(content).unwrap();
+
+        assert_eq!(state.root(), Some(dir.as_path()));
+        assert!(state.pending.is_none());
+        assert_eq!(
+            fs::read_to_string(dir.join("roadmap.json")).unwrap(),
+            content
+        );
+        assert!(dir.join("descriptions").is_dir());
     }
 }
