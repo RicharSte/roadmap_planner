@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { parseProject } from "../domain/validate";
+import { parseProject, validateProject } from "../domain/validate";
 import { DomainError } from "../domain/types";
 import type { Project } from "../domain/types";
 
@@ -17,12 +17,23 @@ export type StorageErrorCode =
   | "PENDING_NOT_PROJECT"
   | "NO_PROJECT_OPEN"
   | "INVALID_JSON"
-  | "INVALID_PROJECT";
+  | "INVALID_PROJECT"
+  | "READ_ONLY";
 
 /** Результат открытия или перезагрузки проекта. */
 export type OpenResult =
   | { kind: "opened"; project: Project }
   | { kind: "cancelled" }
+  | {
+      kind: "error";
+      code: StorageErrorCode;
+      message: string;
+      problems?: DomainError[];
+    };
+
+/** Результат сохранения файла проекта. */
+export type SaveResult =
+  | { kind: "saved" }
   | {
       kind: "error";
       code: StorageErrorCode;
@@ -134,4 +145,47 @@ async function parseRaw(
   }
 
   return onValid(result.project);
+}
+
+/**
+ * Сохраняет проект в `roadmap.json` открытого проекта.
+ *
+ * Сначала проверяет `validateProject`; если есть проблемы, `invoke`
+ * не вызывается и возвращается `INVALID_PROJECT`. При успехе сериализует
+ * проект с отступом 2 и завершающим переводом строки, затем атомарно
+ * записывает через Rust.
+ */
+export async function saveProject(project: Project): Promise<SaveResult> {
+  const validation = validateProject(project);
+  if (!validation.ok) {
+    return {
+      kind: "error",
+      code: "INVALID_PROJECT",
+      message: "project data is invalid",
+      problems: validation.problems,
+    };
+  }
+
+  const content = JSON.stringify(project, null, 2) + "\n";
+
+  try {
+    await invoke("save_roadmap", { content });
+    return { kind: "saved" };
+  } catch (error) {
+    return { kind: "error", ...fromRustError(error) };
+  }
+}
+
+/**
+ * Записывает содержимое описания в файл `descriptions/<id>.md` открытого проекта.
+ *
+ * Путь и имя проверяются в Rust; адаптер только передаёт аргументы.
+ */
+export async function writeDescription(path: string, content: string): Promise<SaveResult> {
+  try {
+    await invoke("write_description", { path, content });
+    return { kind: "saved" };
+  } catch (error) {
+    return { kind: "error", ...fromRustError(error) };
+  }
 }

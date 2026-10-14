@@ -1,7 +1,10 @@
+mod atomic;
 mod paths;
 mod project;
 
-use project::{ProjectState, commit_project, open_project, reload_project};
+use project::{
+    ProjectState, commit_project, open_project, reload_project, save_roadmap, write_description,
+};
 use std::sync::Mutex;
 
 /// Демо-команда из шаблона Tauri. Принимает имя и возвращает приветствие.
@@ -32,7 +35,9 @@ pub fn run() {
             greet,
             open_project,
             commit_project,
-            reload_project
+            reload_project,
+            save_roadmap,
+            write_description
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

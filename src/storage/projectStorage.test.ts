@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { openProject, reloadProject } from "./projectStorage";
+import { openProject, reloadProject, saveProject, writeDescription } from "./projectStorage";
+import type { Project } from "../domain/types";
 
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn(),
@@ -8,8 +9,8 @@ vi.mock("@tauri-apps/api/core", () => ({
 
 const mockInvoke = vi.mocked(invoke);
 
-function validProjectJson(): string {
-  return JSON.stringify({
+function validProject(): Project {
+  return {
     version: 1,
     rootIds: ["n_a"],
     nodes: {
@@ -23,7 +24,11 @@ function validProjectJson(): string {
         updatedAt: "2026-01-01T00:00:00Z",
       },
     },
-  });
+  };
+}
+
+function validProjectJson(): string {
+  return JSON.stringify(validProject(), null, 2) + "\n";
 }
 
 describe("openProject", () => {
@@ -112,5 +117,80 @@ describe("reloadProject", () => {
       message: "no project is currently open",
     });
     expect(mockInvoke).not.toHaveBeenCalledWith("commit_project", {});
+  });
+});
+
+describe("saveProject", () => {
+  it("returns saved and invokes save_roadmap with formatted JSON", async () => {
+    mockInvoke.mockResolvedValueOnce(undefined);
+
+    const result = await saveProject(validProject());
+
+    expect(result).toEqual({ kind: "saved" });
+    expect(mockInvoke).toHaveBeenCalledWith("save_roadmap", {
+      content: validProjectJson(),
+    });
+  });
+
+  it("returns INVALID_PROJECT and does not invoke for invalid project", async () => {
+    const invalid: Project = {
+      version: 1,
+      rootIds: ["missing"],
+      nodes: {},
+    };
+
+    const result = await saveProject(invalid);
+
+    expect(result.kind).toBe("error");
+    if (result.kind === "error") {
+      expect(result.code).toBe("INVALID_PROJECT");
+      expect(result.problems).toBeDefined();
+      expect(result.problems!.length).toBeGreaterThan(0);
+    }
+    expect(mockInvoke).not.toHaveBeenCalledWith("save_roadmap", expect.anything());
+  });
+
+  it("passes through a Rust error code", async () => {
+    mockInvoke.mockRejectedValueOnce({
+      code: "READ_ONLY",
+      message: "target file is read-only",
+    });
+
+    const result = await saveProject(validProject());
+
+    expect(result).toEqual({
+      kind: "error",
+      code: "READ_ONLY",
+      message: "target file is read-only",
+    });
+  });
+});
+
+describe("writeDescription", () => {
+  it("returns saved and invokes write_description", async () => {
+    mockInvoke.mockResolvedValueOnce(undefined);
+
+    const result = await writeDescription("descriptions/n_a.md", "# hi");
+
+    expect(result).toEqual({ kind: "saved" });
+    expect(mockInvoke).toHaveBeenCalledWith("write_description", {
+      path: "descriptions/n_a.md",
+      content: "# hi",
+    });
+  });
+
+  it("passes through a Rust error code", async () => {
+    mockInvoke.mockRejectedValueOnce({
+      code: "INVALID_PATH",
+      message: "description path must be descriptions/<name>.md",
+    });
+
+    const result = await writeDescription("roadmap.json", "x");
+
+    expect(result).toEqual({
+      kind: "error",
+      code: "INVALID_PATH",
+      message: "description path must be descriptions/<name>.md",
+    });
   });
 });
