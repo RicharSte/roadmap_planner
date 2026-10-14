@@ -4,6 +4,7 @@ argument-hint: [task-id]
 ---
 Review `git diff` (and new untracked files) against docs/plans/$ARGUMENTS.md if given,
 plus AGENTS.md hard rules and "Code comments" (Russian `///` on every Rust function). Do not edit files.
+Check impact: CodeGraph for callers of changed symbols, Repowise `get_change_risk` for the uncommitted work.
 
 Output:
 - Blockers (bugs, data-loss risk, path safety, broken acceptance criteria)

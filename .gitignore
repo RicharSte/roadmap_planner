@@ -13,10 +13,13 @@ CLAUDE.local.md
 coverage/
 .opencode/node_modules/
 .reviews/
-.repowise/*
-.github/
+
+# Code-intelligence indexes (CodeGraph, Repowise): local, rebuilt per machine
 .codegraph/
-*.
+.repowise/
+# Repowise-generated agent files (generation disabled in .repowise/config.yaml)
+.claude/CLAUDE.md
+.github/copilot-instructions.md
 
 # Rust extras
 **/*.rs.bk

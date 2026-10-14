@@ -37,14 +37,23 @@
       "Bash(rtk prettier *)",
       "Bash(rtk git status*)",
       "Bash(rtk git diff*)",
-      "Bash(rtk git log*)"
+      "Bash(rtk git log*)",
+      "mcp__codegraph",
+      "mcp__repowise",
+      "Bash(codegraph explore *)",
+      "Bash(codegraph status)",
+      "Bash(codegraph sync)"
     ],
     "ask": [
       "Bash(pnpm add *)",
       "Bash(cargo add *)",
       "Bash(git commit *)",
       "Edit(/src-tauri/capabilities/**)",
-      "Edit(/src-tauri/tauri.conf.json)"
+      "Edit(/src-tauri/tauri.conf.json)",
+      "Bash(codegraph uninit *)",
+      "Bash(codegraph index *)",
+      "Bash(repowise delete *)",
+      "Bash(repowise hook *)"
     ],
     "deny": [
       "Agent(general-purpose)",
@@ -60,7 +69,11 @@
       "Bash(git clean *)",
       "Bash(rtk git push *)",
       "Bash(rtk run *)",
-      "Bash(rtk proxy git push *)"
+      "Bash(rtk proxy git push *)",
+      "Bash(repowise distill *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "repowise"
+  ]
 }

@@ -7,7 +7,7 @@ Plan task $ARGUMENTS. Do not edit source code in this command.
 0. Load skill `caveman` (full) for chat replies. Plan file itself: normal full Russian.
 1. If $ARGUMENTS is empty, take the first `todo` task in `docs/backlog.md`. Never invent tasks.
    Read `docs/handoff.md`, the task row, `docs/mvp-done.md`, relevant ADRs in `docs/decisions/`,
-   and only the code files the task touches.
+   and only the code files the task touches (find them and their callers with CodeGraph).
 
 2. Interview (skill `grilling`, with these overrides):
    - Needed when the Plan column is **C**, or a decision is not covered by the brief / ADRs / template.
@@ -15,13 +15,14 @@ Plan task $ARGUMENTS. Do not edit source code in this command.
    - Interview until no decision is open and nothing is silently assumed. No limit on rounds or questions.
      Each question: options + your recommended answer.
    - Only this task and its acceptance criteria. Beyond-MVP ideas → `docs/later.md`, not questions.
-   - No subagents: find facts yourself with grep/read.
+   - No subagents: find facts yourself (CodeGraph, Repowise, grep/read).
    - Never re-ask what `docs/product-brief.md`, `docs/decisions/`, `docs/open-questions.md` answer.
 
 3. Write `docs/plans/$ARGUMENTS.md` from `docs/plans/_template.md`:
    Problem → Interview decisions → Solution → Acceptance criteria → Files → Steps → Tests → Out of scope → Risks.
    Limits: ≤ 6 files, ≤ 80 lines; bigger → propose a split. Every acceptance criterion is checkable
    (command, test, or manual step with expected result). Durable decisions → propose an ADR.
+   Risks: add Repowise `get_risk` findings for the planned files (hotspots, co-change, past fixes), if any.
 
 4. Set the task status to `plan-review` in `docs/backlog.md`.
 

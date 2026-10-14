@@ -11,6 +11,8 @@
 | Claude Code 2.1.296, OpenCode 2.0.27                                                                     | ✅ в PATH (`~/.zshrc`)                                                  |
 | Plannotator 0.27.16                                                                                      | ✅ CLI, работает в обоих инструментах                                   |
 | RTK 0.48.0                                                                                               | ✅ хук в Claude Code, плагин в OpenCode                                 |
+| CodeGraph 1.6.2                                                                                          | ✅ MCP в обоих инструментах, индекс `.codegraph/` (не в git)            |
+| Repowise 0.56.0                                                                                          | ✅ MCP в обоих инструментах, индекс `.repowise/` (не в git)             |
 | Skills для Claude (`caveman`, `grilling`, `grill-me`, `handoff`, `investigate-first`, `verify-and-stop`) | ✅ симлинки в `~/.claude/skills`                                        |
 | Проектные skills `tdd`, `tauri-v2`                                                                       | ✅ `.claude/skills/` (видят оба инструмента)                            |
 | `opencode.json`, `.claude/settings.json`, агент `scout`                                                  | ✅ проходят официальные JSON-схемы                                      |
@@ -128,6 +130,11 @@ rm ~/.claude/skills/grill-with-docs
 - **RTK** сжимает вывод команд — тесты, `cargo`, `git`, линтеры (входные токены). Подключается хуком
   в Claude Code и плагином в OpenCode; агенту ничего делать не нужно. Если нужен полный, несжатый вывод — `rtk proxy <команда>`.
 - Проверить экономию: `rtk gain`.
+- **CodeGraph** — граф кода (TS + Rust) для поиска «где X / кто вызывает Y / что сломается». Агент
+  использует его вместо grep и чтения многих файлов. **Repowise** — история и риски файлов
+  (частые правки, связанные изменения, мёртвый код); используется в планах (раздел «Риски») и на ревью.
+  Правила — раздел «Code intelligence» в `AGENTS.md`. Индексы обновляются сами
+  (Repowise — git-хуком после коммита, CodeGraph — фоновым процессом); в git они не попадают.
 
 ## 8. Шпаргалка
 

@@ -7,6 +7,7 @@ Implement task $ARGUMENTS.
 0. Load skill `caveman` (full) for chat replies. Report file itself: normal full Russian.
 1. Read `docs/plans/$ARGUMENTS.md`. If missing or its status is not `approved`, stop and say so.
 2. Set backlog status `in-progress`. Read only the files listed in the plan (plus direct imports).
+   Before changing a shared symbol, check its callers with CodeGraph; a caller outside the plan → stop and ask.
 3. Implement exactly the plan, step by step. Skill `tdd` for domain/Rust logic, `tauri-v2` for Tauri work.
    Follow "Code comments" in AGENTS.md (Russian `///` on every Rust function).
    Anything outside the plan → one line in `docs/later.md`, do not implement it.
