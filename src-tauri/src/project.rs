@@ -1,3 +1,4 @@
+use crate::atomic::{remove_stale_temps, write_inside};
 use crate::paths::AppError;
 use std::fs;
 use std::io::ErrorKind;
@@ -63,7 +64,10 @@ impl ProjectState {
             .ok_or_else(|| AppError::new("NO_PENDING_PROJECT", "no project is pending"))?;
         match pending.view {
             PendingView::Roadmap => {
-                self.root = Some(pending.dir);
+                self.root = Some(pending.dir.clone());
+                // Лучше убрать мусор от предыдущих сбоев сразу, чем оставлять
+                // пользователю полузаписанные `.tmp`. Ошибки игнорируем.
+                remove_stale_temps(&pending.dir);
                 Ok(())
             }
             PendingView::Empty => Err(AppError::new(
@@ -71,6 +75,87 @@ impl ProjectState {
                 "selected folder is empty, not a project",
             )),
         }
+    }
+
+    /// Проверяет, что `path` — это `descriptions/<name>.md`, где `<name>`
+    /// состоит только из латиницы, цифр, подчёркивания и дефиса.
+    ///
+    /// # Ошибки
+    /// - `INVALID_PATH` — путь не соответствует шаблону.
+    fn validate_description_path(path: &str) -> Result<(), AppError> {
+        const PREFIX: &str = "descriptions/";
+        const SUFFIX: &str = ".md";
+
+        if !path.starts_with(PREFIX) || !path.ends_with(SUFFIX) {
+            return Err(AppError::new(
+                "INVALID_PATH",
+                "description path must be descriptions/<name>.md",
+            ));
+        }
+
+        let name = &path[PREFIX.len()..path.len() - SUFFIX.len()];
+        if name.is_empty() {
+            return Err(AppError::new("INVALID_PATH", "description name is empty"));
+        }
+
+        if !name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+        {
+            return Err(AppError::new(
+                "INVALID_PATH",
+                "description name contains invalid characters",
+            ));
+        }
+
+        Ok(())
+    }
+
+    /// Атомарно сохраняет `content` как `roadmap.json` в открытом проекте.
+    ///
+    /// # Ошибки
+    /// - `NO_PROJECT_OPEN` — проект ещё не подтверждён.
+    /// - `INVALID_JSON` — содержимое не является валидным JSON; файл не трогается.
+    /// - Ошибки `write_inside` передаются без изменений.
+    pub fn save_roadmap(&self, content: &str) -> Result<(), AppError> {
+        let root = self
+            .root
+            .as_deref()
+            .ok_or_else(|| AppError::new("NO_PROJECT_OPEN", "no project is currently open"))?;
+
+        // Проверяем синтаксис JSON, но не схему: схема — ответственность домена.
+        if serde_json::from_str::<serde_json::Value>(content).is_err() {
+            return Err(AppError::new("INVALID_JSON", "content is not valid JSON"));
+        }
+
+        write_inside(root, "roadmap.json", content.as_bytes())?;
+        remove_stale_temps(root);
+        Ok(())
+    }
+
+    /// Атомарно записывает `content` в файл описания внутри открытого проекта.
+    ///
+    /// # Ошибки
+    /// - `NO_PROJECT_OPEN` — проект ещё не подтверждён.
+    /// - `INVALID_PATH` — путь не `descriptions/<name>.md`.
+    /// - Ошибки `write_inside` передаются без изменений.
+    pub fn write_description(&self, path: &str, content: &str) -> Result<(), AppError> {
+        let root = self
+            .root
+            .as_deref()
+            .ok_or_else(|| AppError::new("NO_PROJECT_OPEN", "no project is currently open"))?;
+
+        Self::validate_description_path(path)?;
+
+        let descriptions_dir = root.join("descriptions");
+        if !descriptions_dir.exists() {
+            fs::create_dir(&descriptions_dir)
+                .map_err(|e| AppError::io(format!("cannot create descriptions directory: {e}")))?;
+        }
+
+        write_inside(root, path, content.as_bytes())?;
+        remove_stale_temps(root);
+        Ok(())
     }
 
     /// Возвращает папку открытого проекта, если он есть.
@@ -238,6 +323,35 @@ pub fn reload_project(state: State<'_, Mutex<ProjectState>>) -> Result<String, A
     state.lock().unwrap().reload()
 }
 
+/// Сохраняет `roadmap.json` в открытом проекте атомарно.
+///
+/// # Ошибки
+/// - `NO_PROJECT_OPEN` — проект ещё не подтверждён.
+/// - `INVALID_JSON` — содержимое не является валидным JSON.
+/// - Ошибки записи передаются без изменений.
+#[tauri::command]
+pub fn save_roadmap(
+    state: State<'_, Mutex<ProjectState>>,
+    content: String,
+) -> Result<(), AppError> {
+    state.lock().unwrap().save_roadmap(&content)
+}
+
+/// Записывает файл описания в открытый проект атомарно.
+///
+/// # Ошибки
+/// - `NO_PROJECT_OPEN` — проект ещё не подтверждён.
+/// - `INVALID_PATH` — путь не соответствует шаблону `descriptions/<name>.md`.
+/// - Ошибки записи передаются без изменений.
+#[tauri::command]
+pub fn write_description(
+    state: State<'_, Mutex<ProjectState>>,
+    path: String,
+    content: String,
+) -> Result<(), AppError> {
+    state.lock().unwrap().write_description(&path, &content)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -384,5 +498,120 @@ mod tests {
 
         let content = state.reload().unwrap();
         assert_eq!(content, r#"{"version":1}"#);
+    }
+
+    /// `save_roadmap` без открытого проекта возвращает `NO_PROJECT_OPEN`.
+    #[test]
+    fn save_roadmap_without_root_fails() {
+        let state = ProjectState::new();
+        let err = state.save_roadmap(r#"{"version":1}"#).unwrap_err();
+        assert_eq!(err.code, "NO_PROJECT_OPEN");
+    }
+
+    /// Невалидный JSON не трогает файл.
+    #[test]
+    fn save_roadmap_rejects_invalid_json() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), "old").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let err = state.save_roadmap("{").unwrap_err();
+        assert_eq!(err.code, "INVALID_JSON");
+        assert_eq!(fs::read_to_string(dir.join("roadmap.json")).unwrap(), "old");
+    }
+
+    /// Валидный JSON атомарно записывается в `roadmap.json`.
+    #[test]
+    fn save_roadmap_writes_valid_json() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), "old").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        state.save_roadmap(r#"{"version":1}"#).unwrap();
+        assert_eq!(
+            fs::read_to_string(dir.join("roadmap.json")).unwrap(),
+            r#"{"version":1}"#
+        );
+    }
+
+    /// `commit` для проекта убирает устаревшие `.tmp`.
+    #[test]
+    fn commit_cleans_stale_temps() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join(".roadmap.json.tmp"), "x").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+        assert!(!dir.join(".roadmap.json.tmp").exists());
+    }
+
+    /// `write_description` без открытого проекта возвращает `NO_PROJECT_OPEN`.
+    #[test]
+    fn write_description_without_root_fails() {
+        let state = ProjectState::new();
+        let err = state
+            .write_description("descriptions/n_a.md", "# hi")
+            .unwrap_err();
+        assert_eq!(err.code, "NO_PROJECT_OPEN");
+    }
+
+    /// Недопустимые пути описаний отклоняются до записи.
+    #[test]
+    fn write_description_rejects_invalid_paths() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let invalid = vec![
+            "roadmap.json",
+            "descriptions/a.txt",
+            "descriptions/sub/a.md",
+            "descriptions/../a.md",
+            "descriptions/a b.md",
+            "descriptions/.md",
+        ];
+
+        for path in invalid {
+            let err = state.write_description(path, "x").unwrap_err();
+            assert_eq!(err.code, "INVALID_PATH", "path: {}", path);
+        }
+    }
+
+    /// Если папки `descriptions/` нет, она создаётся, и файл записывается.
+    #[test]
+    fn write_description_creates_descriptions_dir() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        state
+            .write_description("descriptions/n_a.md", "# hello")
+            .unwrap();
+        assert_eq!(
+            fs::read_to_string(dir.join("descriptions/n_a.md")).unwrap(),
+            "# hello"
+        );
+    }
+
+    /// Пустое содержимое тоже записывается.
+    #[test]
+    fn write_description_writes_empty_content() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        state.write_description("descriptions/n_a.md", "").unwrap();
+        assert_eq!(fs::read(dir.join("descriptions/n_a.md")).unwrap(), b"");
     }
 }
