@@ -2,10 +2,16 @@
 
 <!-- Перезаписывается агентом в конце каждой фазы. Стиль: caveman full. -->
 
-- Done: T-002 code-review approved. `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, Rust checks — all green.
-- Task: T-004 (`src/domain/`: types, parent index, create/rename/delete/move node, validation ADR 0005 + tests)
-- Status: todo
-- Next tool: OpenCode, model Kimi K2.7 Code
-- Next command: `/task-plan T-004` (plan not exists yet, need Plannotator approve before build)
-- Blockers: plan T-004 missing
-- Notes: T-002 added `eslint.config.js`, `.prettierignore`, `src/test/setup.ts`, `src/App.test.tsx`. Updated `package.json`, `vite.config.ts`, `AGENTS.md`, `docs/mvp-done.md` item 25 checked, `docs/later.md` out-of-scope lines. No Rust changes.
+- Done: T-004. Domain ready: `src/domain/types.ts`, `ids.ts`, `validate.ts`, `tree.ts` + tests. All 51 tests green. `pnpm typecheck`, `lint`, `format:check` green. Plannotator code review approved.
+- Task: T-005 (Rust: open project folder, read/parse `roadmap.json`, path-safety helper + tests)
+- Status: todo, ready to start
+- Next tool: OpenCode, model Kimi K2.7 Code (Build column = K)
+- Next command: `/task-build T-005`
+- Blockers: none
+- Notes:
+  - Domain API fixed. Use `parseProject` / `validateProject` from `src/domain/validate.ts` for JSON semantics. Rust side reads bytes and returns raw JSON to frontend, or validates shape via invoke — see `docs/plans/T-005.md`.
+  - Path safety hard rule: paths stay inside opened folder. No `..`, absolute paths, symlink escape. Rust treats frontend input as untrusted.
+  - Atomic writes = T-006, do not implement here.
+  - New Tauri plugin / permission / capability = ask user first.
+  - Follow `tauri-v2` skill. Rust comments `///` in Russian on every function.
+  - If same error fails twice, stop and write handoff.
