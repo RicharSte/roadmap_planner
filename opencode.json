@@ -18,7 +18,12 @@
       "git checkout -- *": "ask",
       "rtk git push*": "deny",
       "rtk run *": "ask",
-      "rtk proxy *": "ask"
+      "rtk proxy *": "ask",
+      "repowise distill*": "deny",
+      "repowise delete*": "ask",
+      "repowise hook*": "ask",
+      "codegraph uninit*": "ask",
+      "codegraph index*": "ask"
     },
     "read": {
       "*": "allow",
@@ -50,15 +55,14 @@
     }
   },
   "mcp": {
+    "codegraph": {
+      "type": "local",
+      "command": ["codegraph", "serve", "--mcp"],
+      "enabled": true
+    },
     "repowise": {
       "type": "local",
-      "command": [
-        "repowise",
-        "mcp",
-        "/Users/ns/prodjects/roadmap_proj",
-        "--transport",
-        "stdio"
-      ],
+      "command": ["repowise", "mcp", "/Users/ns/prodjects/roadmap_proj", "--transport", "stdio"],
       "enabled": true
     }
   }

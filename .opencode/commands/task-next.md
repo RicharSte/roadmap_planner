@@ -4,7 +4,7 @@ agent: build
 ---
 Tell the user what to do next. Do not edit code.
 
-0. Load skill `caveman` (lite).
+0. Load skill `caveman` (full).
 1. Read `docs/handoff.md`, `docs/backlog.md`, `docs/mvp-done.md`.
 2. If every item in `docs/mvp-done.md` is checked: say the MVP is done and stop. Do not propose new work.
 3. Otherwise reply in ≤ 6 lines: current task + status, next action, which tool/model

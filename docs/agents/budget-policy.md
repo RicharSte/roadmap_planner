@@ -13,7 +13,8 @@ multiply usage: each one re-reads context and files from scratch.
 3. **Max 1 subagent at a time.** No parallel fan-out, no nested subagents, no "agent teams".
 4. **Never delegate** planning, implementation, review, or debugging to a subagent.
 5. **Never run a subagent on a heavy model** (Opus, Sonnet, or similar frontier models).
-6. Prefer grep/glob/targeted reads over any subagent.
+6. Prefer CodeGraph / Repowise MCP calls, grep/glob and targeted reads over any subagent.
+   MCP calls are not subagents (see AGENTS.md "Code intelligence").
 7. Do not re-read files already in context; do not print whole files back.
 8. Keep final reports ≤ 15 lines unless asked for detail.
 
@@ -22,7 +23,7 @@ multiply usage: each one re-reads context and files from scratch.
 - Claude Code — `.claude/settings.json`:
   - `CLAUDE_CODE_SUBAGENT_MODEL=haiku` + `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` → every subagent runs on Haiku.
   - `permissions.deny`: `Agent(general-purpose)`, `Agent(Plan)`.
-  - Project agent `.claude/agents/scout.md` (haiku, Read/Grep/Glob, maxTurns 8).
+  - Project agent `.claude/agents/scout.md` (haiku, Read/Grep/Glob + `codegraph_explore`, maxTurns 8).
   - To forbid subagents entirely, add `"Agent"` to `permissions.deny`.
 - OpenCode — `opencode.json`:
   - `permission.task`: `"*": "deny"`, `"scout": "allow"` (globally and for build/plan).
