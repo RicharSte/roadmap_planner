@@ -11,7 +11,7 @@ Plan / Build: **C** = Claude Code, **K** = OpenCode + Kimi K2.7 Code, **M** = Op
 | T-001 | Scaffold Tauri 2 app, React + TS template (`pnpm create tauri-app`), dev build runs               | M    | M     | done   |
 | T-002 | ESLint + Prettier + Vitest + RTL, package.json scripts; real **Commands** in AGENTS.md            | C    | K     | done   |
 | T-003 | JSON schema + `.md` location → ADR 0005                                                           | C    | —     | done   |
-| T-004 | `src/domain/`: types, parent index, create/rename/delete/move node, validation (ADR 0005) + tests | C    | K     | todo   |
+| T-004 | `src/domain/`: types, parent index, create/rename/delete/move node, validation (ADR 0005) + tests | C    | K     | done   |
 | T-005 | Rust: open project folder, read/parse `roadmap.json`, path-safety helper + tests                  | C    | K     | todo   |
 | T-006 | Rust: atomic write for JSON and `.md` + tests                                                     | C    | K     | todo   |
 | T-007 | Create new project (folder picker, initial `roadmap.json`, `descriptions/`)                       | K    | K     | todo   |
