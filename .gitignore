@@ -16,6 +16,7 @@ coverage/
 .repowise/*
 .github/
 .codegraph/
+*.
 
 # Rust extras
 **/*.rs.bk
