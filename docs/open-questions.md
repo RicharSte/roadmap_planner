@@ -11,6 +11,7 @@ Resolve before the related backlog task. Record the answer as an ADR in `docs/de
 | Q5  | Markdown editor        | CodeMirror 6 + react-markdown preview                     | 0006 |
 | Q6  | Tooling                | ESLint + Prettier, Vitest + RTL, cargo checks             | 0007 |
 | Q7  | Domain API style       | Pure functions, `DomainError` codes, parent index outside | 0008 |
+| Q8  | File access model      | Rust owns root, relative paths, two-phase open            | 0009 |
 
 ## Still open
 

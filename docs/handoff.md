@@ -2,16 +2,18 @@
 
 <!-- Перезаписывается агентом в конце каждой фазы. Стиль: caveman full. -->
 
-- Done: T-004. Domain ready: `src/domain/types.ts`, `ids.ts`, `validate.ts`, `tree.ts` + tests. All 51 tests green. `pnpm typecheck`, `lint`, `format:check` green. Plannotator code review approved.
-- Task: T-005 (Rust: open project folder, read/parse `roadmap.json`, path-safety helper + tests)
-- Status: todo, ready to start
+- Done: T-005. Code review approved. Merged? No — user did not ask commit.
+- Task: T-006 (Rust: atomic write JSON + .md + tests)
+- Status: todo, no `docs/plans/T-006.md` yet. Need plan before build.
 - Next tool: OpenCode, model Kimi K2.7 Code (Build column = K)
-- Next command: `/task-build T-005`
-- Blockers: none
+- Next command: wait for `/task-plan T-006` or approved plan, then `/task-build T-006`
+- Blockers: missing approved plan for T-006
 - Notes:
-  - Domain API fixed. Use `parseProject` / `validateProject` from `src/domain/validate.ts` for JSON semantics. Rust side reads bytes and returns raw JSON to frontend, or validates shape via invoke — see `docs/plans/T-005.md`.
-  - Path safety hard rule: paths stay inside opened folder. No `..`, absolute paths, symlink escape. Rust treats frontend input as untrusted.
-  - Atomic writes = T-006, do not implement here.
-  - New Tauri plugin / permission / capability = ask user first.
-  - Follow `tauri-v2` skill. Rust comments `///` in Russian on every function.
-  - If same error fails twice, stop and write handoff.
+  - T-005 left ready state:
+    - `src-tauri/src/project.rs`: `ProjectState` with `pending`/`root`, `read_roadmap`, commands `open_project`/`commit_project`/`reload_project`.
+    - `src-tauri/src/paths.rs`: `resolve_inside` path-safety helper, `AppError`.
+    - `src/storage/projectStorage.ts`: `openProject`, `reloadProject`, adapter pattern.
+  - T-006 will add write side: atomic temp + rename for `roadmap.json` and `descriptions/<id>.md`. Reuse `resolve_inside` for path checks.
+  - Keep `greet`, `opener`, `App.tsx` untouched — deferred to later.
+  - `docs/later.md` has row for removing demo stuff after MVP.
+  - Suggest commit message for T-005 changes: `feat(T-005): open project folder, read roadmap.json, path-safety helper + tests`
