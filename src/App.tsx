@@ -14,12 +14,18 @@ function App() {
     selectedId,
     collapsed,
     error,
+    saveError,
     pendingCreate,
     open,
     create,
     cancelCreate,
     select,
     toggle,
+    createNode,
+    renameNode,
+    deleteNode,
+    moveNode,
+    setNodeStatus,
   } = useProject();
   const [sidebarWidth, setSidebarWidth] = useState(INITIAL_SIDEBAR_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
@@ -86,6 +92,27 @@ function App() {
         </div>
       )}
 
+      {saveError !== null && (
+        <div
+          className="error-banner save-error-banner"
+          role="alert"
+          data-testid="save-error-banner"
+        >
+          <strong>Не удалось сохранить изменения</strong>
+          <span className="error-code">{saveError.code}</span>
+          <span className="error-message">{saveError.message}</span>
+          {saveError.problems !== undefined && saveError.problems.length > 0 && (
+            <ul className="error-problems">
+              {saveError.problems.map((problem, index) => (
+                <li key={index}>
+                  {problem.code}: {problem.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <div className={`workspace ${isResizing ? "resizing" : ""}`}>
         {project !== null && (
           <div className="sidebar-wrapper" style={{ width: sidebarWidth }}>
@@ -95,6 +122,8 @@ function App() {
               collapsed={collapsed}
               onSelect={select}
               onToggle={toggle}
+              onCreateNode={createNode}
+              onMoveNode={moveNode}
             />
           </div>
         )}
@@ -104,7 +133,13 @@ function App() {
           role="separator"
           aria-label="Изменить ширину сайдбара"
         />
-        <DetailsPanel project={project} selectedId={selectedId} />
+        <DetailsPanel
+          project={project}
+          selectedId={selectedId}
+          onRename={renameNode}
+          onDelete={deleteNode}
+          onSetStatus={setNodeStatus}
+        />
       </div>
     </div>
   );

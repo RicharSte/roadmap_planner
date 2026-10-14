@@ -4,7 +4,7 @@ argument-hint: <task-id, e.g. T-004>
 ---
 Plan task $ARGUMENTS. Do not edit source code in this command.
 
-0. Load skill `caveman` (lite) for chat replies. Plan file itself: normal full Russian.
+0. Load skill `caveman` (full) for chat replies. Plan file itself: normal full Russian.
 1. If $ARGUMENTS is empty, take the first `todo` task in `docs/backlog.md`. Never invent tasks.
    Read `docs/handoff.md`, the task row, `docs/mvp-done.md`, relevant ADRs in `docs/decisions/`,
    and only the code files the task touches.
@@ -20,7 +20,7 @@ Plan task $ARGUMENTS. Do not edit source code in this command.
 
 3. Write `docs/plans/$ARGUMENTS.md` from `docs/plans/_template.md`:
    Problem → Interview decisions → Solution → Acceptance criteria → Files → Steps → Tests → Out of scope → Risks.
-   Limits: ≤ 6 files, ≤ 80 lines; bigger → propose a split. Every acceptance criterion is checkable
+   Limits: ≤ 10 files, ≤ 120 lines; bigger → propose a split. Every acceptance criterion is checkable
    (command, test, or manual step with expected result). Durable decisions → propose an ADR.
 
 4. Set the task status to `plan-review` in `docs/backlog.md`.
