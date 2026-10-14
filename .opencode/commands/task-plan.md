@@ -20,7 +20,7 @@ Plan task $ARGUMENTS. Do not edit source code in this command.
 
 3. Write `docs/plans/$ARGUMENTS.md` from `docs/plans/_template.md`:
    Problem → Interview decisions → Solution → Acceptance criteria → Files → Steps → Tests → Out of scope → Risks.
-   Limits: ≤ 6 files, ≤ 80 lines; bigger → propose a split. Every acceptance criterion is checkable
+   Limits: ≤ 10 files, ≤ 120 lines; bigger → propose a split. Every acceptance criterion is checkable
    (command, test, or manual step with expected result). Durable decisions → propose an ADR.
    Risks: add Repowise `get_risk` findings for the planned files (hotspots, co-change, past fixes), if any.
 
