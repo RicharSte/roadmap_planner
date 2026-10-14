@@ -4,7 +4,7 @@
   "project": {
     "name": "roadmap_proj",
     "is_monorepo": false,
-    "total_files": 96,
+    "total_files": 100,
     "entry_points": [
       "src/main.tsx",
       "src/App.tsx",
@@ -59,6 +59,20 @@
       "summary": ""
     },
     {
+      "id": "file:.claude/CLAUDE.md",
+      "type": "document",
+      "filePath": ".claude/CLAUDE.md",
+      "language": "markdown",
+      "symbolCount": 0,
+      "lineCount": 163,
+      "complexity": "moderate",
+      "pagerank": 0.006391,
+      "communityId": 3,
+      "tags": [],
+      "summary": "Repository instructions and context for AI coding agents.",
+      "primaryOwner": "NS"
+    },
+    {
       "id": "file:.claude/agents/scout.md",
       "type": "document",
       "filePath": ".claude/agents/scout.md",
@@ -66,11 +80,10 @@
       "symbolCount": 0,
       "lineCount": 13,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 3,
+      "pagerank": 0.006391,
+      "communityId": 4,
       "tags": [],
-      "summary": "Documentation: scout.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: scout.md."
     },
     {
       "id": "file:.claude/commands/review-diff.md",
@@ -80,11 +93,10 @@
       "symbolCount": 0,
       "lineCount": 13,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 4,
+      "pagerank": 0.006391,
+      "communityId": 5,
       "tags": [],
-      "summary": "Documentation: review-diff.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: review-diff.md."
     },
     {
       "id": "file:.claude/commands/task-build.md",
@@ -94,8 +106,8 @@
       "symbolCount": 0,
       "lineCount": 53,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 5,
+      "pagerank": 0.006391,
+      "communityId": 6,
       "tags": [],
       "summary": "Documentation: task-build.md.",
       "primaryOwner": "NS"
@@ -108,11 +120,10 @@
       "symbolCount": 0,
       "lineCount": 15,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 6,
+      "pagerank": 0.006391,
+      "communityId": 7,
       "tags": [],
-      "summary": "Documentation: task-next.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: task-next.md."
     },
     {
       "id": "file:.claude/commands/task-plan.md",
@@ -122,8 +133,8 @@
       "symbolCount": 0,
       "lineCount": 64,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 7,
+      "pagerank": 0.006391,
+      "communityId": 8,
       "tags": [],
       "summary": "Documentation: task-plan.md.",
       "primaryOwner": "NS"
@@ -136,13 +147,12 @@
       "symbolCount": 0,
       "lineCount": 43,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 8,
+      "pagerank": 0.006391,
+      "communityId": 9,
       "tags": [
         "config"
       ],
-      "summary": "Configuration file: settings.json.",
-      "primaryOwner": "NS"
+      "summary": "Configuration file: settings.json."
     },
     {
       "id": "file:.claude/skills/README.md",
@@ -152,11 +162,10 @@
       "symbolCount": 0,
       "lineCount": 19,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 9,
+      "pagerank": 0.006391,
+      "communityId": 10,
       "tags": [],
-      "summary": "Project overview and entry point for new readers.",
-      "primaryOwner": "NS"
+      "summary": "Project overview and entry point for new readers."
     },
     {
       "id": "file:.claude/skills/tauri-v2/SKILL.md",
@@ -166,11 +175,10 @@
       "symbolCount": 0,
       "lineCount": 413,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 10,
+      "pagerank": 0.006391,
+      "communityId": 11,
       "tags": [],
-      "summary": "Documentation: SKILL.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: SKILL.md."
     },
     {
       "id": "file:.claude/skills/tauri-v2/references/README.md",
@@ -180,11 +188,10 @@
       "symbolCount": 0,
       "lineCount": 47,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 11,
+      "pagerank": 0.006391,
+      "communityId": 12,
       "tags": [],
-      "summary": "Project overview and entry point for new readers.",
-      "primaryOwner": "NS"
+      "summary": "Project overview and entry point for new readers."
     },
     {
       "id": "file:.claude/skills/tauri-v2/references/advanced-runtime-reference.md",
@@ -194,11 +201,10 @@
       "symbolCount": 0,
       "lineCount": 126,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 12,
+      "pagerank": 0.006391,
+      "communityId": 13,
       "tags": [],
-      "summary": "Documentation: advanced-runtime-reference.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: advanced-runtime-reference.md."
     },
     {
       "id": "file:.claude/skills/tauri-v2/references/capabilities-reference.md",
@@ -208,11 +214,10 @@
       "symbolCount": 0,
       "lineCount": 220,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 13,
+      "pagerank": 0.006391,
+      "communityId": 14,
       "tags": [],
-      "summary": "Documentation: capabilities-reference.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: capabilities-reference.md."
     },
     {
       "id": "file:.claude/skills/tauri-v2/references/ipc-patterns.md",
@@ -222,11 +227,10 @@
       "symbolCount": 0,
       "lineCount": 305,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 14,
+      "pagerank": 0.006391,
+      "communityId": 15,
       "tags": [],
-      "summary": "Documentation: ipc-patterns.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: ipc-patterns.md."
     },
     {
       "id": "file:.claude/skills/tauri-v2/references/plugin-reference.md",
@@ -236,11 +240,10 @@
       "symbolCount": 0,
       "lineCount": 220,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 15,
+      "pagerank": 0.006391,
+      "communityId": 16,
       "tags": [],
-      "summary": "Documentation: plugin-reference.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: plugin-reference.md."
     },
     {
       "id": "file:.claude/skills/tauri-v2/references/updater-distribution-reference.md",
@@ -250,11 +253,10 @@
       "symbolCount": 0,
       "lineCount": 106,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 16,
+      "pagerank": 0.006391,
+      "communityId": 17,
       "tags": [],
-      "summary": "Documentation: updater-distribution-reference.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: updater-distribution-reference.md."
     },
     {
       "id": "file:.claude/skills/tdd/SKILL.md",
@@ -264,11 +266,10 @@
       "symbolCount": 0,
       "lineCount": 90,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 17,
+      "pagerank": 0.006391,
+      "communityId": 18,
       "tags": [],
-      "summary": "Documentation: SKILL.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: SKILL.md."
     },
     {
       "id": "file:.claude/skills/tdd/mocking.md",
@@ -278,11 +279,10 @@
       "symbolCount": 0,
       "lineCount": 37,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 18,
+      "pagerank": 0.006391,
+      "communityId": 19,
       "tags": [],
-      "summary": "Documentation: mocking.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: mocking.md."
     },
     {
       "id": "file:.claude/skills/tdd/tests.md",
@@ -292,10 +292,39 @@
       "symbolCount": 0,
       "lineCount": 55,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 19,
+      "pagerank": 0.006391,
+      "communityId": 20,
       "tags": [],
-      "summary": "Documentation: tests.md.",
+      "summary": "Documentation: tests.md."
+    },
+    {
+      "id": "file:.github/copilot-instructions.md",
+      "type": "document",
+      "filePath": ".github/copilot-instructions.md",
+      "language": "markdown",
+      "symbolCount": 0,
+      "lineCount": 26,
+      "complexity": "simple",
+      "pagerank": 0.006391,
+      "communityId": 21,
+      "tags": [],
+      "summary": "Documentation: copilot-instructions.md.",
+      "primaryOwner": "NS"
+    },
+    {
+      "id": "file:.mcp.json",
+      "type": "config",
+      "filePath": ".mcp.json",
+      "language": "json",
+      "symbolCount": 0,
+      "lineCount": 7,
+      "complexity": "simple",
+      "pagerank": 0.006391,
+      "communityId": 22,
+      "tags": [
+        "config"
+      ],
+      "summary": "Configuration file: .mcp.json.",
       "primaryOwner": "NS"
     },
     {
@@ -306,11 +335,10 @@
       "symbolCount": 0,
       "lineCount": 11,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 20,
+      "pagerank": 0.006391,
+      "communityId": 23,
       "tags": [],
-      "summary": "Documentation: scout.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: scout.md."
     },
     {
       "id": "file:.opencode/commands/fix.md",
@@ -320,11 +348,10 @@
       "symbolCount": 0,
       "lineCount": 6,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 21,
+      "pagerank": 0.006391,
+      "communityId": 24,
       "tags": [],
-      "summary": "Documentation: fix.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: fix.md."
     },
     {
       "id": "file:.opencode/commands/task-build.md",
@@ -334,8 +361,8 @@
       "symbolCount": 0,
       "lineCount": 62,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 22,
+      "pagerank": 0.006391,
+      "communityId": 25,
       "tags": [],
       "summary": "Documentation: task-build.md.",
       "primaryOwner": "NS"
@@ -348,11 +375,10 @@
       "symbolCount": 0,
       "lineCount": 15,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 23,
+      "pagerank": 0.006391,
+      "communityId": 26,
       "tags": [],
-      "summary": "Documentation: task-next.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: task-next.md."
     },
     {
       "id": "file:.opencode/commands/task-plan.md",
@@ -362,8 +388,8 @@
       "symbolCount": 0,
       "lineCount": 63,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 24,
+      "pagerank": 0.006391,
+      "communityId": 27,
       "tags": [],
       "summary": "Documentation: task-plan.md.",
       "primaryOwner": "NS"
@@ -374,10 +400,10 @@
       "filePath": "AGENTS.md",
       "language": "markdown",
       "symbolCount": 0,
-      "lineCount": 138,
+      "lineCount": 165,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 25,
+      "pagerank": 0.006391,
+      "communityId": 28,
       "tags": [],
       "summary": "Documentation: AGENTS.md.",
       "primaryOwner": "NS"
@@ -390,11 +416,10 @@
       "symbolCount": 0,
       "lineCount": 18,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 26,
+      "pagerank": 0.006391,
+      "communityId": 29,
       "tags": [],
-      "summary": "Repository instructions and context for AI coding agents.",
-      "primaryOwner": "NS"
+      "summary": "Repository instructions and context for AI coding agents."
     },
     {
       "id": "file:README.md",
@@ -404,11 +429,10 @@
       "symbolCount": 0,
       "lineCount": 102,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 27,
+      "pagerank": 0.006391,
+      "communityId": 30,
       "tags": [],
-      "summary": "Project overview and entry point for new readers.",
-      "primaryOwner": "NS"
+      "summary": "Project overview and entry point for new readers."
     },
     {
       "id": "file:docs/agents/budget-policy.md",
@@ -418,11 +442,10 @@
       "symbolCount": 0,
       "lineCount": 44,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 28,
+      "pagerank": 0.006391,
+      "communityId": 31,
       "tags": [],
-      "summary": "Documentation: budget-policy.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: budget-policy.md."
     },
     {
       "id": "file:docs/agents/workflow.md",
@@ -432,11 +455,10 @@
       "symbolCount": 0,
       "lineCount": 39,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 29,
+      "pagerank": 0.006391,
+      "communityId": 32,
       "tags": [],
-      "summary": "Documentation: workflow.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: workflow.md."
     },
     {
       "id": "file:docs/backlog.md",
@@ -444,10 +466,10 @@
       "filePath": "docs/backlog.md",
       "language": "markdown",
       "symbolCount": 0,
-      "lineCount": 79,
+      "lineCount": 78,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 30,
+      "pagerank": 0.006391,
+      "communityId": 33,
       "tags": [],
       "summary": "Documentation: backlog.md.",
       "primaryOwner": "NS"
@@ -460,11 +482,10 @@
       "symbolCount": 0,
       "lineCount": 14,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 31,
+      "pagerank": 0.006391,
+      "communityId": 34,
       "tags": [],
-      "summary": "Documentation: 0001-stack.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0001-stack.md."
     },
     {
       "id": "file:docs/decisions/0002-project-folder-storage.md",
@@ -474,11 +495,10 @@
       "symbolCount": 0,
       "lineCount": 16,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 32,
+      "pagerank": 0.006391,
+      "communityId": 35,
       "tags": [],
-      "summary": "Documentation: 0002-project-folder-storage.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0002-project-folder-storage.md."
     },
     {
       "id": "file:docs/decisions/0003-frontend-react.md",
@@ -488,11 +508,10 @@
       "symbolCount": 0,
       "lineCount": 14,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 33,
+      "pagerank": 0.006391,
+      "communityId": 36,
       "tags": [],
-      "summary": "Documentation: 0003-frontend-react.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0003-frontend-react.md."
     },
     {
       "id": "file:docs/decisions/0004-ui-layout.md",
@@ -502,11 +521,10 @@
       "symbolCount": 0,
       "lineCount": 15,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 34,
+      "pagerank": 0.006391,
+      "communityId": 37,
       "tags": [],
-      "summary": "Documentation: 0004-ui-layout.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0004-ui-layout.md."
     },
     {
       "id": "file:docs/decisions/0005-project-format.md",
@@ -516,11 +534,10 @@
       "symbolCount": 0,
       "lineCount": 53,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 35,
+      "pagerank": 0.006391,
+      "communityId": 38,
       "tags": [],
-      "summary": "Documentation: 0005-project-format.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0005-project-format.md."
     },
     {
       "id": "file:docs/decisions/0006-markdown-editor.md",
@@ -530,11 +547,10 @@
       "symbolCount": 0,
       "lineCount": 12,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 36,
+      "pagerank": 0.006391,
+      "communityId": 39,
       "tags": [],
-      "summary": "Documentation: 0006-markdown-editor.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0006-markdown-editor.md."
     },
     {
       "id": "file:docs/decisions/0007-tooling.md",
@@ -544,11 +560,10 @@
       "symbolCount": 0,
       "lineCount": 12,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 37,
+      "pagerank": 0.006391,
+      "communityId": 40,
       "tags": [],
-      "summary": "Documentation: 0007-tooling.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0007-tooling.md."
     },
     {
       "id": "file:docs/decisions/0008-domain-api.md",
@@ -558,11 +573,10 @@
       "symbolCount": 0,
       "lineCount": 44,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 38,
+      "pagerank": 0.006391,
+      "communityId": 41,
       "tags": [],
-      "summary": "Documentation: 0008-domain-api.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0008-domain-api.md."
     },
     {
       "id": "file:docs/decisions/0009-file-access-model.md",
@@ -572,11 +586,10 @@
       "symbolCount": 0,
       "lineCount": 48,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 39,
+      "pagerank": 0.006391,
+      "communityId": 42,
       "tags": [],
-      "summary": "Documentation: 0009-file-access-model.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0009-file-access-model.md."
     },
     {
       "id": "file:docs/decisions/0010-format-v2-v3-dependencies-agents.md",
@@ -586,11 +599,10 @@
       "symbolCount": 0,
       "lineCount": 71,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 40,
+      "pagerank": 0.006391,
+      "communityId": 43,
       "tags": [],
-      "summary": "Documentation: 0010-format-v2-v3-dependencies-agents.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0010-format-v2-v3-dependencies-agents.md."
     },
     {
       "id": "file:docs/decisions/0011-atomic-writes.md",
@@ -600,11 +612,10 @@
       "symbolCount": 0,
       "lineCount": 57,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 41,
+      "pagerank": 0.006391,
+      "communityId": 44,
       "tags": [],
-      "summary": "Documentation: 0011-atomic-writes.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: 0011-atomic-writes.md."
     },
     {
       "id": "file:docs/decisions/0012-tree-drag-and-drop.md",
@@ -614,10 +625,11 @@
       "symbolCount": 0,
       "lineCount": 34,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 42,
+      "pagerank": 0.006391,
+      "communityId": 45,
       "tags": [],
-      "summary": "Documentation: 0012-tree-drag-and-drop.md."
+      "summary": "Documentation: 0012-tree-drag-and-drop.md.",
+      "primaryOwner": "NS"
     },
     {
       "id": "file:docs/decisions/README.md",
@@ -627,11 +639,10 @@
       "symbolCount": 0,
       "lineCount": 6,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 43,
+      "pagerank": 0.006391,
+      "communityId": 46,
       "tags": [],
-      "summary": "Project overview and entry point for new readers.",
-      "primaryOwner": "NS"
+      "summary": "Project overview and entry point for new readers."
     },
     {
       "id": "file:docs/guide.md",
@@ -641,8 +652,8 @@
       "symbolCount": 0,
       "lineCount": 429,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 44,
+      "pagerank": 0.006391,
+      "communityId": 47,
       "tags": [],
       "summary": "Documentation: guide.md.",
       "primaryOwner": "NS"
@@ -653,10 +664,10 @@
       "filePath": "docs/handoff.md",
       "language": "markdown",
       "symbolCount": 0,
-      "lineCount": 43,
+      "lineCount": 64,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 45,
+      "pagerank": 0.006391,
+      "communityId": 48,
       "tags": [],
       "summary": "Documentation: handoff.md.",
       "primaryOwner": "NS"
@@ -669,8 +680,8 @@
       "symbolCount": 0,
       "lineCount": 602,
       "complexity": "complex",
-      "pagerank": 0.006559,
-      "communityId": 46,
+      "pagerank": 0.006391,
+      "communityId": 49,
       "tags": [],
       "summary": "Documentation: later.md.",
       "primaryOwner": "NS"
@@ -683,8 +694,8 @@
       "symbolCount": 0,
       "lineCount": 70,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 47,
+      "pagerank": 0.006391,
+      "communityId": 50,
       "tags": [],
       "summary": "Documentation: mvp-done.md.",
       "primaryOwner": "NS"
@@ -697,11 +708,10 @@
       "symbolCount": 0,
       "lineCount": 66,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 48,
+      "pagerank": 0.006391,
+      "communityId": 51,
       "tags": [],
-      "summary": "Documentation: open-questions.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: open-questions.md."
     },
     {
       "id": "file:docs/plans/T-002.md",
@@ -711,11 +721,10 @@
       "symbolCount": 0,
       "lineCount": 175,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 49,
+      "pagerank": 0.006391,
+      "communityId": 52,
       "tags": [],
-      "summary": "Documentation: T-002.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-002.md."
     },
     {
       "id": "file:docs/plans/T-004.md",
@@ -725,11 +734,10 @@
       "symbolCount": 0,
       "lineCount": 223,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 50,
+      "pagerank": 0.006391,
+      "communityId": 53,
       "tags": [],
-      "summary": "Documentation: T-004.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-004.md."
     },
     {
       "id": "file:docs/plans/T-005.md",
@@ -739,11 +747,10 @@
       "symbolCount": 0,
       "lineCount": 225,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 51,
+      "pagerank": 0.006391,
+      "communityId": 54,
       "tags": [],
-      "summary": "Documentation: T-005.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-005.md."
     },
     {
       "id": "file:docs/plans/T-006.md",
@@ -753,11 +760,10 @@
       "symbolCount": 0,
       "lineCount": 219,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 52,
+      "pagerank": 0.006391,
+      "communityId": 55,
       "tags": [],
-      "summary": "Documentation: T-006.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-006.md."
     },
     {
       "id": "file:docs/plans/T-007.md",
@@ -767,11 +773,10 @@
       "symbolCount": 0,
       "lineCount": 160,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 53,
+      "pagerank": 0.006391,
+      "communityId": 56,
       "tags": [],
-      "summary": "Documentation: T-007.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-007.md."
     },
     {
       "id": "file:docs/plans/T-008.md",
@@ -781,11 +786,10 @@
       "symbolCount": 0,
       "lineCount": 186,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 54,
+      "pagerank": 0.006391,
+      "communityId": 57,
       "tags": [],
-      "summary": "Documentation: T-008.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-008.md."
     },
     {
       "id": "file:docs/plans/T-009.md",
@@ -795,10 +799,11 @@
       "symbolCount": 0,
       "lineCount": 206,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 55,
+      "pagerank": 0.006391,
+      "communityId": 58,
       "tags": [],
-      "summary": "Documentation: T-009.md."
+      "summary": "Documentation: T-009.md.",
+      "primaryOwner": "NS"
     },
     {
       "id": "file:docs/plans/_template.md",
@@ -808,8 +813,8 @@
       "symbolCount": 0,
       "lineCount": 43,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 56,
+      "pagerank": 0.006391,
+      "communityId": 59,
       "tags": [],
       "summary": "Documentation: _template.md.",
       "primaryOwner": "NS"
@@ -822,11 +827,10 @@
       "symbolCount": 0,
       "lineCount": 83,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 57,
+      "pagerank": 0.006391,
+      "communityId": 60,
       "tags": [],
-      "summary": "Documentation: product-brief.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: product-brief.md."
     },
     {
       "id": "file:docs/reports/T-001.md",
@@ -836,11 +840,10 @@
       "symbolCount": 0,
       "lineCount": 392,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 58,
+      "pagerank": 0.006391,
+      "communityId": 61,
       "tags": [],
-      "summary": "Documentation: T-001.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-001.md."
     },
     {
       "id": "file:docs/reports/T-002.md",
@@ -850,11 +853,10 @@
       "symbolCount": 0,
       "lineCount": 308,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 59,
+      "pagerank": 0.006391,
+      "communityId": 62,
       "tags": [],
-      "summary": "Documentation: T-002.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-002.md."
     },
     {
       "id": "file:docs/reports/T-004.md",
@@ -864,11 +866,10 @@
       "symbolCount": 0,
       "lineCount": 213,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 60,
+      "pagerank": 0.006391,
+      "communityId": 63,
       "tags": [],
-      "summary": "Documentation: T-004.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-004.md."
     },
     {
       "id": "file:docs/reports/T-005.md",
@@ -878,11 +879,10 @@
       "symbolCount": 0,
       "lineCount": 267,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 61,
+      "pagerank": 0.006391,
+      "communityId": 64,
       "tags": [],
-      "summary": "Documentation: T-005.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-005.md."
     },
     {
       "id": "file:docs/reports/T-006.md",
@@ -892,11 +892,10 @@
       "symbolCount": 0,
       "lineCount": 300,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 62,
+      "pagerank": 0.006391,
+      "communityId": 65,
       "tags": [],
-      "summary": "Documentation: T-006.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-006.md."
     },
     {
       "id": "file:docs/reports/T-007.md",
@@ -906,11 +905,10 @@
       "symbolCount": 0,
       "lineCount": 170,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 63,
+      "pagerank": 0.006391,
+      "communityId": 66,
       "tags": [],
-      "summary": "Documentation: T-007.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: T-007.md."
     },
     {
       "id": "file:docs/reports/T-008.md",
@@ -920,10 +918,23 @@
       "symbolCount": 0,
       "lineCount": 189,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 64,
+      "pagerank": 0.006391,
+      "communityId": 67,
       "tags": [],
-      "summary": "Documentation: T-008.md.",
+      "summary": "Documentation: T-008.md."
+    },
+    {
+      "id": "file:docs/reports/T-009.md",
+      "type": "document",
+      "filePath": "docs/reports/T-009.md",
+      "language": "markdown",
+      "symbolCount": 0,
+      "lineCount": 216,
+      "complexity": "moderate",
+      "pagerank": 0.006391,
+      "communityId": 68,
+      "tags": [],
+      "summary": "Documentation: T-009.md.",
       "primaryOwner": "NS"
     },
     {
@@ -934,11 +945,10 @@
       "symbolCount": 0,
       "lineCount": 28,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 65,
+      "pagerank": 0.006391,
+      "communityId": 69,
       "tags": [],
-      "summary": "Documentation: _template.md.",
-      "primaryOwner": "NS"
+      "summary": "Documentation: _template.md."
     },
     {
       "id": "file:eslint.config.js",
@@ -948,11 +958,10 @@
       "symbolCount": 0,
       "lineCount": 19,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 66,
+      "pagerank": 0.006391,
+      "communityId": 70,
       "tags": [],
-      "summary": "Application module eslint.config.",
-      "primaryOwner": "NS"
+      "summary": "Application module eslint.config."
     },
     {
       "id": "file:index.html",
@@ -962,11 +971,10 @@
       "symbolCount": 0,
       "lineCount": 9,
       "complexity": "simple",
-      "pagerank": 0.006559,
+      "pagerank": 0.006391,
       "communityId": 0,
       "tags": [],
-      "summary": "Application module index.",
-      "primaryOwner": "NS"
+      "summary": "Application module index."
     },
     {
       "id": "file:opencode.json",
@@ -974,10 +982,10 @@
       "filePath": "opencode.json",
       "language": "json",
       "symbolCount": 0,
-      "lineCount": 26,
+      "lineCount": 31,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 67,
+      "pagerank": 0.006391,
+      "communityId": 71,
       "tags": [
         "config"
       ],
@@ -992,13 +1000,12 @@
       "symbolCount": 0,
       "lineCount": 30,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 68,
+      "pagerank": 0.006391,
+      "communityId": 72,
       "tags": [
         "config"
       ],
-      "summary": "Node package manifest: dependencies, scripts, and metadata.",
-      "primaryOwner": "NS"
+      "summary": "Node package manifest: dependencies, scripts, and metadata."
     },
     {
       "id": "file:src-tauri/Cargo.toml",
@@ -1008,13 +1015,12 @@
       "symbolCount": 0,
       "lineCount": 24,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 69,
+      "pagerank": 0.006391,
+      "communityId": 73,
       "tags": [
         "config"
       ],
-      "summary": "Configuration file: Cargo.toml.",
-      "primaryOwner": "NS"
+      "summary": "Configuration file: Cargo.toml."
     },
     {
       "id": "file:src-tauri/build.rs",
@@ -1024,11 +1030,10 @@
       "symbolCount": 1,
       "lineCount": 0,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 70,
+      "pagerank": 0.006391,
+      "communityId": 74,
       "tags": [],
-      "summary": "Application module build defining main.",
-      "primaryOwner": "NS"
+      "summary": "Application module build defining main."
     },
     {
       "id": "file:src-tauri/capabilities/default.json",
@@ -1038,13 +1043,12 @@
       "symbolCount": 0,
       "lineCount": 5,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 71,
+      "pagerank": 0.006391,
+      "communityId": 75,
       "tags": [
         "config"
       ],
-      "summary": "Configuration file: default.json.",
-      "primaryOwner": "NS"
+      "summary": "Configuration file: default.json."
     },
     {
       "id": "file:src-tauri/src/atomic.rs",
@@ -1054,11 +1058,10 @@
       "symbolCount": 24,
       "lineCount": 370,
       "complexity": "complex",
-      "pagerank": 0.008628,
+      "pagerank": 0.008408,
       "communityId": 2,
       "tags": [],
-      "summary": "Application module atomic defining is_read_only, resolve_symlink, remove_stale_temp.",
-      "primaryOwner": "NS"
+      "summary": "Application module atomic defining is_read_only, resolve_symlink, remove_stale_temp."
     },
     {
       "id": "file:src-tauri/src/lib.rs",
@@ -1068,13 +1071,12 @@
       "symbolCount": 5,
       "lineCount": 55,
       "complexity": "moderate",
-      "pagerank": 0.006559,
+      "pagerank": 0.006391,
       "communityId": 2,
       "tags": [
         "entry_point"
       ],
-      "summary": "Application module lib defining greet, run.",
-      "primaryOwner": "NS"
+      "summary": "Application module lib defining greet, run."
     },
     {
       "id": "file:src-tauri/src/main.rs",
@@ -1084,13 +1086,12 @@
       "symbolCount": 1,
       "lineCount": 11,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 72,
+      "pagerank": 0.006391,
+      "communityId": 76,
       "tags": [
         "entry_point"
       ],
-      "summary": "Application module main defining main.",
-      "primaryOwner": "NS"
+      "summary": "Application module main defining main."
     },
     {
       "id": "file:src-tauri/src/paths.rs",
@@ -1100,11 +1101,10 @@
       "symbolCount": 20,
       "lineCount": 226,
       "complexity": "complex",
-      "pagerank": 0.009362,
+      "pagerank": 0.009122,
       "communityId": 2,
       "tags": [],
-      "summary": "Application module paths defining AppError, AppError, new.",
-      "primaryOwner": "NS"
+      "summary": "Application module paths defining AppError, AppError, new."
     },
     {
       "id": "file:src-tauri/src/project.rs",
@@ -1114,11 +1114,10 @@
       "symbolCount": 59,
       "lineCount": 755,
       "complexity": "complex",
-      "pagerank": 0.007952,
+      "pagerank": 0.007749,
       "communityId": 2,
       "tags": [],
-      "summary": "Application module project defining PendingView, PendingProject, ProjectState.",
-      "primaryOwner": "NS"
+      "summary": "Application module project defining PendingView, PendingProject, ProjectState."
     },
     {
       "id": "file:src-tauri/tauri.conf.json",
@@ -1128,13 +1127,12 @@
       "symbolCount": 0,
       "lineCount": 17,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 73,
+      "pagerank": 0.006391,
+      "communityId": 77,
       "tags": [
         "config"
       ],
-      "summary": "Configuration file: tauri.conf.json.",
-      "primaryOwner": "NS"
+      "summary": "Configuration file: tauri.conf.json."
     },
     {
       "id": "file:src/App.test.tsx",
@@ -1144,8 +1142,8 @@
       "symbolCount": 7,
       "lineCount": 403,
       "complexity": "moderate",
-      "pagerank": 0.006559,
-      "communityId": 1,
+      "pagerank": 0.006391,
+      "communityId": 0,
       "tags": [
         "test"
       ],
@@ -1160,7 +1158,7 @@
       "symbolCount": 4,
       "lineCount": 112,
       "complexity": "moderate",
-      "pagerank": 0.011111,
+      "pagerank": 0.010827,
       "communityId": 0,
       "tags": [
         "entry_point"
@@ -1176,11 +1174,10 @@
       "symbolCount": 5,
       "lineCount": 41,
       "complexity": "moderate",
-      "pagerank": 0.016378,
+      "pagerank": 0.015959,
       "communityId": 1,
       "tags": [],
-      "summary": "Service module ids defining createNodeId, randomString.",
-      "primaryOwner": "NS"
+      "summary": "Service module ids defining createNodeId, randomString."
     },
     {
       "id": "file:src/domain/tree.test.ts",
@@ -1190,13 +1187,12 @@
       "symbolCount": 2,
       "lineCount": 238,
       "complexity": "moderate",
-      "pagerank": 0.006559,
+      "pagerank": 0.006391,
       "communityId": 1,
       "tags": [
         "test"
       ],
-      "summary": "Tests for tree.",
-      "primaryOwner": "NS"
+      "summary": "Tests for tree."
     },
     {
       "id": "file:src/domain/tree.ts",
@@ -1206,7 +1202,7 @@
       "symbolCount": 17,
       "lineCount": 341,
       "complexity": "complex",
-      "pagerank": 0.019823,
+      "pagerank": 0.019317,
       "communityId": 1,
       "tags": [],
       "summary": "Service module tree defining nowOrDefault, isNodeStatus, createEmptyProject.",
@@ -1220,11 +1216,10 @@
       "symbolCount": 7,
       "lineCount": 48,
       "complexity": "moderate",
-      "pagerank": 0.057005,
+      "pagerank": 0.055548,
       "communityId": 1,
       "tags": [],
-      "summary": "Service module types defining RoadmapNode, Project, DomainError.",
-      "primaryOwner": "NS"
+      "summary": "Service module types defining RoadmapNode, Project, DomainError."
     },
     {
       "id": "file:src/domain/validate.test.ts",
@@ -1234,13 +1229,12 @@
       "symbolCount": 1,
       "lineCount": 162,
       "complexity": "moderate",
-      "pagerank": 0.006559,
+      "pagerank": 0.006391,
       "communityId": 1,
       "tags": [
         "test"
       ],
-      "summary": "Tests for validate.",
-      "primaryOwner": "NS"
+      "summary": "Tests for validate."
     },
     {
       "id": "file:src/domain/validate.ts",
@@ -1250,11 +1244,10 @@
       "symbolCount": 9,
       "lineCount": 245,
       "complexity": "moderate",
-      "pagerank": 0.011577,
+      "pagerank": 0.011281,
       "communityId": 1,
       "tags": [],
-      "summary": "Service module validate defining isPlainObject, isNodeStatus, addProblem.",
-      "primaryOwner": "NS"
+      "summary": "Service module validate defining isPlainObject, isNodeStatus, addProblem."
     },
     {
       "id": "file:src/main.tsx",
@@ -1264,13 +1257,12 @@
       "symbolCount": 0,
       "lineCount": 5,
       "complexity": "simple",
-      "pagerank": 0.012134,
+      "pagerank": 0.011823,
       "communityId": 0,
       "tags": [
         "entry_point"
       ],
-      "summary": "Application module main.",
-      "primaryOwner": "NS"
+      "summary": "Application module main."
     },
     {
       "id": "file:src/storage/projectStorage.test.ts",
@@ -1280,13 +1272,12 @@
       "symbolCount": 3,
       "lineCount": 193,
       "complexity": "moderate",
-      "pagerank": 0.006559,
+      "pagerank": 0.006391,
       "communityId": 1,
       "tags": [
         "test"
       ],
-      "summary": "Tests for projectstorage.",
-      "primaryOwner": "NS"
+      "summary": "Tests for projectstorage."
     },
     {
       "id": "file:src/storage/projectStorage.ts",
@@ -1296,11 +1287,10 @@
       "symbolCount": 12,
       "lineCount": 183,
       "complexity": "moderate",
-      "pagerank": 0.010498,
+      "pagerank": 0.01023,
       "communityId": 1,
       "tags": [],
-      "summary": "Application module projectStorage defining fromRustError, openProject, reloadProject.",
-      "primaryOwner": "NS"
+      "summary": "Application module projectStorage defining fromRustError, openProject, reloadProject."
     },
     {
       "id": "file:src/test/setup.ts",
@@ -1310,13 +1300,12 @@
       "symbolCount": 0,
       "lineCount": 1,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 78,
+      "pagerank": 0.006391,
+      "communityId": 82,
       "tags": [
         "test"
       ],
-      "summary": "Tests for setup.",
-      "primaryOwner": "NS"
+      "summary": "Tests for setup."
     },
     {
       "id": "file:src/ui/DetailsPanel.tsx",
@@ -1326,7 +1315,7 @@
       "symbolCount": 2,
       "lineCount": 126,
       "complexity": "moderate",
-      "pagerank": 0.00892,
+      "pagerank": 0.008692,
       "communityId": 0,
       "tags": [],
       "summary": "UI module DetailsPanel defining DetailsPanelProps, DetailsPanel.",
@@ -1340,7 +1329,7 @@
       "symbolCount": 6,
       "lineCount": 260,
       "complexity": "moderate",
-      "pagerank": 0.00892,
+      "pagerank": 0.008692,
       "communityId": 0,
       "tags": [],
       "summary": "UI module TreeSidebar defining TreeSidebarProps, TreeRowProps, isDescendant.",
@@ -1354,11 +1343,10 @@
       "symbolCount": 3,
       "lineCount": 16,
       "complexity": "simple",
-      "pagerank": 0.010981,
+      "pagerank": 0.010701,
       "communityId": 0,
       "tags": [],
-      "summary": "Application module status defining statusLabel.",
-      "primaryOwner": "NS"
+      "summary": "Application module status defining statusLabel."
     },
     {
       "id": "file:src/ui/useProject.ts",
@@ -1368,7 +1356,7 @@
       "symbolCount": 3,
       "lineCount": 202,
       "complexity": "moderate",
-      "pagerank": 0.00892,
+      "pagerank": 0.008692,
       "communityId": 1,
       "tags": [],
       "summary": "Application module useProject defining ProjectError, UseProjectResult, useProject.",
@@ -1382,11 +1370,10 @@
       "symbolCount": 0,
       "lineCount": 0,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 74,
+      "pagerank": 0.006391,
+      "communityId": 78,
       "tags": [],
-      "summary": "Application module vite-env.d.",
-      "primaryOwner": "NS"
+      "summary": "Application module vite-env.d."
     },
     {
       "id": "file:tsconfig.json",
@@ -1396,13 +1383,12 @@
       "symbolCount": 0,
       "lineCount": 14,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 75,
+      "pagerank": 0.006391,
+      "communityId": 79,
       "tags": [
         "config"
       ],
-      "summary": "TypeScript compiler configuration.",
-      "primaryOwner": "NS"
+      "summary": "TypeScript compiler configuration."
     },
     {
       "id": "file:tsconfig.node.json",
@@ -1412,13 +1398,12 @@
       "symbolCount": 0,
       "lineCount": 5,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 76,
+      "pagerank": 0.006391,
+      "communityId": 80,
       "tags": [
         "config"
       ],
-      "summary": "Configuration file: tsconfig.node.json.",
-      "primaryOwner": "NS"
+      "summary": "Configuration file: tsconfig.node.json."
     },
     {
       "id": "file:vite.config.ts",
@@ -1428,11 +1413,10 @@
       "symbolCount": 1,
       "lineCount": 32,
       "complexity": "simple",
-      "pagerank": 0.006559,
-      "communityId": 77,
+      "pagerank": 0.006391,
+      "communityId": 81,
       "tags": [],
-      "summary": "Application module vite.config (1 symbols).",
-      "primaryOwner": "NS"
+      "summary": "Application module vite.config (1 symbols)."
     },
     {
       "id": "function:src-tauri/src/atomic.rs:copy_permissions",
@@ -3546,6 +3530,7 @@
       "name": "Application",
       "description": "",
       "nodeIds": [
+        "file:.mcp.json",
         "file:AGENTS.md",
         "file:CLAUDE.md",
         "file:README.md",
@@ -3591,6 +3576,7 @@
       "name": "Config",
       "description": "",
       "nodeIds": [
+        "file:.claude/CLAUDE.md",
         "file:.claude/agents/scout.md",
         "file:.claude/commands/review-diff.md",
         "file:.claude/commands/task-build.md",
@@ -3608,6 +3594,7 @@
         "file:.claude/skills/tdd/SKILL.md",
         "file:.claude/skills/tdd/mocking.md",
         "file:.claude/skills/tdd/tests.md",
+        "file:.github/copilot-instructions.md",
         "file:.opencode/agents/scout.md",
         "file:.opencode/commands/fix.md",
         "file:.opencode/commands/task-build.md",
@@ -3672,6 +3659,7 @@
         "file:docs/reports/T-006.md",
         "file:docs/reports/T-007.md",
         "file:docs/reports/T-008.md",
+        "file:docs/reports/T-009.md",
         "file:docs/reports/_template.md"
       ],
       "display_order": 4,
@@ -3701,8 +3689,7 @@
       "depth": 0,
       "kind": "overview",
       "reason": "Start here for the end-to-end picture before diving into the code.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 2,
@@ -3712,8 +3699,7 @@
       "depth": 0,
       "kind": "code",
       "reason": "An entry point \u2014 execution and imports fan out from here.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 3,
@@ -3723,8 +3709,7 @@
       "depth": 0,
       "kind": "code",
       "reason": "An entry point \u2014 execution and imports fan out from here.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 4,
@@ -3734,8 +3719,7 @@
       "depth": 0,
       "kind": "code",
       "reason": "An entry point \u2014 execution and imports fan out from here.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 5,
@@ -3745,8 +3729,7 @@
       "depth": 0,
       "kind": "code",
       "reason": "An entry point \u2014 execution and imports fan out from here.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 6,
@@ -3756,8 +3739,7 @@
       "depth": 1,
       "kind": "code",
       "reason": "Directly used by the entry points above; a core collaborator.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 7,
@@ -3767,8 +3749,7 @@
       "depth": 1,
       "kind": "code",
       "reason": "Directly used by the entry points above; a core collaborator.",
-      "layer_id": "layer:ui",
-      "wikiPageIds": []
+      "layer_id": "layer:ui"
     },
     {
       "order": 8,
@@ -3778,8 +3759,7 @@
       "depth": 1,
       "kind": "code",
       "reason": "Directly used by the entry points above; a core collaborator.",
-      "layer_id": "layer:ui",
-      "wikiPageIds": []
+      "layer_id": "layer:ui"
     },
     {
       "order": 9,
@@ -3789,8 +3769,7 @@
       "depth": 1,
       "kind": "code",
       "reason": "Directly used by the entry points above; a core collaborator.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 10,
@@ -3800,8 +3779,7 @@
       "depth": 1,
       "kind": "code",
       "reason": "Directly used by the entry points above; a core collaborator.",
-      "layer_id": "layer:application",
-      "wikiPageIds": []
+      "layer_id": "layer:application"
     },
     {
       "order": 11,
@@ -3811,8 +3789,7 @@
       "depth": 1,
       "kind": "code",
       "reason": "The Service layer's anchor \u2014 its most depended-on file.",
-      "layer_id": "layer:service",
-      "wikiPageIds": []
+      "layer_id": "layer:service"
     },
     {
       "order": 12,
@@ -3822,8 +3799,7 @@
       "depth": 2,
       "kind": "code",
       "reason": "The test suite \u2014 how the system's behavior is verified.",
-      "layer_id": "layer:test",
-      "wikiPageIds": []
+      "layer_id": "layer:test"
     }
   ],
   "modules": [
@@ -3833,6 +3809,7 @@
       "path": "",
       "layerId": "layer:application",
       "nodeIds": [
+        "file:.mcp.json",
         "file:AGENTS.md",
         "file:CLAUDE.md",
         "file:README.md",
@@ -3860,7 +3837,7 @@
         "file:vite.config.ts"
       ],
       "wholeLayer": true,
-      "language": "typescript"
+      "language": "json"
     },
     {
       "id": "module:config",
@@ -3868,6 +3845,7 @@
       "path": "",
       "layerId": "layer:config",
       "nodeIds": [
+        "file:.claude/CLAUDE.md",
         "file:.claude/agents/scout.md",
         "file:.claude/commands/review-diff.md",
         "file:.claude/commands/task-build.md",
@@ -3885,6 +3863,7 @@
         "file:.claude/skills/tdd/SKILL.md",
         "file:.claude/skills/tdd/mocking.md",
         "file:.claude/skills/tdd/tests.md",
+        "file:.github/copilot-instructions.md",
         "file:.opencode/agents/scout.md",
         "file:.opencode/commands/fix.md",
         "file:.opencode/commands/task-build.md",
@@ -3951,6 +3930,7 @@
         "file:docs/reports/T-006.md",
         "file:docs/reports/T-007.md",
         "file:docs/reports/T-008.md",
+        "file:docs/reports/T-009.md",
         "file:docs/reports/_template.md"
       ],
       "wholeLayer": true,

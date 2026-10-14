@@ -13,7 +13,7 @@ CLAUDE.local.md
 coverage/
 .opencode/node_modules/
 .reviews/
-.repowise/
+.repowise/*
 .github/
 .codegraph/
 
