@@ -36,6 +36,10 @@ src-tauri/src/  Tauri commands: open/create/read/write project and .md files.
 - Rust treats frontend input as untrusted; paths stay inside the opened folder (no `..`, absolute paths, escaping symlinks).
 - Least-privilege Tauri capabilities. New plugin, permission, capability or dependency = ask first.
 - Do not edit `docs/product-brief.md` or `docs/decisions/*` unless asked.
+- Post-MVP scope (1.1 / 1.2 / 2.0) lives in `docs/later.md` and ADR 0010 (proposed). Do not implement it
+  or add its fields (`dependsOn`, `blocker`, `assignee`, ...) until the user moves tasks into `docs/backlog.md`.
+- Post-MVP scope (1.1 / 1.2 / 2.0) lives in `docs/later.md` and ADR 0010 (proposed). Do not implement it
+  or add its fields (`dependsOn`, `blocker`, `assignee`, ...) until the user moves tasks into `docs/backlog.md`.
 - Do not commit, push, or delete files outside the task unless asked.
 
 ## Task loop

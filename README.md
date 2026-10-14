@@ -22,7 +22,7 @@ Local-first desktop-приложение (macOS, Windows) для визуаль�
 | `docs/decisions/`              | ADR                                                                                   |
 | `docs/guide.md`                | **Инструкция по работе с агентами**                                                   |
 | `docs/mvp-done.md`             | Определение готовности MVP                                                            |
-| `docs/later.md`                | Идеи после MVP                                                                        |
+| `docs/later.md`                | План после MVP: 1.1 (зависимости), 1.2 (агенты), 2.0 (B2C) + входящие идеи            |
 | `docs/plans/`                  | Планы задач (шаблон `_template.md`)                                                   |
 | `docs/reports/`                | Отчёты по задачам для ревью (шаблон `_template.md`)                                   |
 | `docs/agents/workflow.md`      | Кто какой моделью что делает                                                          |
