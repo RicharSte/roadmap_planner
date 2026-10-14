@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { createEmptyProject } from "../domain/tree";
 import { parseProject, validateProject } from "../domain/validate";
 import { DomainError } from "../domain/types";
 import type { Project } from "../domain/types";
@@ -15,6 +16,8 @@ export type StorageErrorCode =
   | "NOT_UTF8"
   | "NO_PENDING_PROJECT"
   | "PENDING_NOT_PROJECT"
+  | "PENDING_NOT_EMPTY"
+  | "FOLDER_NOT_EMPTY"
   | "NO_PROJECT_OPEN"
   | "INVALID_JSON"
   | "INVALID_PROJECT"
@@ -97,6 +100,34 @@ export async function reloadProject(): Promise<OpenResult> {
   try {
     const raw = await invoke<string>("reload_project", {});
     return parseWithoutCommit(raw);
+  } catch (error) {
+    return { kind: "error", ...fromRustError(error) };
+  }
+}
+
+/**
+ * Создаёт новый пустой проект в папке-кандидате, выбранной через `open_project`.
+ *
+ * Проверяет пустой проект через `validateProject`, сериализует его и
+ * вызывает Rust-команду `create_project`. При успехе проект считается открытым.
+ */
+export async function createProject(): Promise<OpenResult> {
+  const project = createEmptyProject();
+  const validation = validateProject(project);
+  if (!validation.ok) {
+    return {
+      kind: "error",
+      code: "INVALID_PROJECT",
+      message: "project data is invalid",
+      problems: validation.problems,
+    };
+  }
+
+  const content = JSON.stringify(project, null, 2) + "\n";
+
+  try {
+    await invoke("create_project", { content });
+    return { kind: "opened", project };
   } catch (error) {
     return { kind: "error", ...fromRustError(error) };
   }

@@ -3,7 +3,8 @@ mod paths;
 mod project;
 
 use project::{
-    ProjectState, commit_project, open_project, reload_project, save_roadmap, write_description,
+    ProjectState, commit_project, create_project, open_project, reload_project, save_roadmap,
+    write_description,
 };
 use std::sync::Mutex;
 
@@ -35,6 +36,7 @@ pub fn run() {
             greet,
             open_project,
             commit_project,
+            create_project,
             reload_project,
             save_roadmap,
             write_description

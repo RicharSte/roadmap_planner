@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { openProject, reloadProject, saveProject, writeDescription } from "./projectStorage";
+import {
+  createProject,
+  openProject,
+  reloadProject,
+  saveProject,
+  writeDescription,
+} from "./projectStorage";
+import { createEmptyProject } from "../domain/tree";
+import { parseProject, validateProject } from "../domain/validate";
 import type { Project } from "../domain/types";
 
 vi.mock("@tauri-apps/api/core", () => ({
@@ -191,6 +199,78 @@ describe("writeDescription", () => {
       kind: "error",
       code: "INVALID_PATH",
       message: "description path must be descriptions/<name>.md",
+    });
+  });
+});
+
+describe("createEmptyProject", () => {
+  it("passes parseProject and validateProject", () => {
+    const project = createEmptyProject();
+    const parsed = parseProject(JSON.parse(JSON.stringify(project)));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const validated = validateProject(parsed.project);
+    expect(validated.ok).toBe(true);
+  });
+});
+
+describe("createProject", () => {
+  it("returns opened and invokes create_project with formatted empty project", async () => {
+    mockInvoke.mockResolvedValueOnce(undefined);
+
+    const result = await createProject();
+
+    expect(result.kind).toBe("opened");
+    if (result.kind === "opened") {
+      expect(result.project).toEqual(createEmptyProject());
+    }
+    expect(mockInvoke).toHaveBeenCalledWith("create_project", {
+      content: JSON.stringify(createEmptyProject(), null, 2) + "\n",
+    });
+  });
+
+  it("passes through PENDING_NOT_EMPTY", async () => {
+    mockInvoke.mockRejectedValueOnce({
+      code: "PENDING_NOT_EMPTY",
+      message: "selected folder already contains a project",
+    });
+
+    const result = await createProject();
+
+    expect(result).toEqual({
+      kind: "error",
+      code: "PENDING_NOT_EMPTY",
+      message: "selected folder already contains a project",
+    });
+  });
+
+  it("passes through FOLDER_NOT_EMPTY", async () => {
+    mockInvoke.mockRejectedValueOnce({
+      code: "FOLDER_NOT_EMPTY",
+      message: "folder is no longer empty",
+    });
+
+    const result = await createProject();
+
+    expect(result).toEqual({
+      kind: "error",
+      code: "FOLDER_NOT_EMPTY",
+      message: "folder is no longer empty",
+    });
+  });
+
+  it("passes through INVALID_JSON", async () => {
+    mockInvoke.mockRejectedValueOnce({
+      code: "INVALID_JSON",
+      message: "content is not valid JSON",
+    });
+
+    const result = await createProject();
+
+    expect(result).toEqual({
+      kind: "error",
+      code: "INVALID_JSON",
+      message: "content is not valid JSON",
     });
   });
 });
