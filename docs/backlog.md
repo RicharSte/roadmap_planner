@@ -15,7 +15,7 @@ Plan / Build: **C** = Claude Code, **K** = OpenCode + Kimi K2.7 Code, **M** = Op
 | T-005 | Rust: open project folder, read/parse `roadmap.json`, path-safety helper + tests                              | C    | K     | done   |
 | T-006 | Rust: atomic write for JSON and `.md` + tests                                                                 | C    | K     | done   |
 | T-007 | Create new project (folder picker, initial `roadmap.json`, `descriptions/`)                                   | K    | K     | done   |
-| T-008 | UI: tree sidebar + details panel (ADR 0004)                                                                   | C    | K     | todo   |
+| T-008 | UI: tree sidebar + details panel (ADR 0004)                                                                   | C    | K     | done   |
 | T-009 | UI: node CRUD, move to parent, status select                                                                  | K    | K     | todo   |
 | T-010 | Description: create `descriptions/<id>.md`, CodeMirror editor + preview (ADR 0006)                            | C    | K     | todo   |
 | T-011 | Autosave (debounced) with error display; предупреждение при закрытии с несохранёнными правками                | K    | K     | todo   |
