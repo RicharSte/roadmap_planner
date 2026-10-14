@@ -13,6 +13,9 @@ CLAUDE.local.md
 coverage/
 .opencode/node_modules/
 .reviews/
+.repowise/*
+.github/
+.codegraph/
 
 # Rust extras
 **/*.rs.bk

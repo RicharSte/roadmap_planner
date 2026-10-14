@@ -1,13 +1,20 @@
 import { useCallback, useMemo, useState } from "react";
-import { buildParentIndex } from "../domain/tree";
-import type { ParentIndex, Project } from "../domain/types";
-import type { DomainError } from "../domain/types";
-import { createProject, openProject } from "../storage/projectStorage";
+import {
+  buildParentIndex,
+  createNode,
+  deleteNode,
+  moveNode,
+  renameNode,
+  setStatus,
+} from "../domain/tree";
+import type { NodeStatus, ParentIndex, Project } from "../domain/types";
+import { DomainError } from "../domain/types";
+import { createProject, openProject, saveProject } from "../storage/projectStorage";
 import type { OpenResult, StorageErrorCode } from "../storage/projectStorage";
 
-/** Ошибка, которую показывает UI после неудачного открытия. */
+/** Ошибка, которую показывает UI после неудачного открытия или сохранения. */
 export interface ProjectError {
-  code: StorageErrorCode;
+  code: StorageErrorCode | "DOMAIN";
   message: string;
   problems?: DomainError[];
 }
@@ -18,6 +25,7 @@ export interface UseProjectResult {
   selectedId: string | null;
   collapsed: Set<string>;
   error: ProjectError | null;
+  saveError: ProjectError | null;
   pendingCreate: boolean;
   parentIndex: ParentIndex;
   open: () => Promise<void>;
@@ -25,12 +33,18 @@ export interface UseProjectResult {
   cancelCreate: () => void;
   select: (id: string) => void;
   toggle: (id: string) => void;
+  update: (compute: (project: Project) => Project) => Promise<void>;
+  createNode: (parentId: string | null, title: string) => Promise<void>;
+  renameNode: (id: string, title: string) => Promise<void>;
+  deleteNode: (id: string) => Promise<void>;
+  moveNode: (id: string, newParentId: string | null, index?: number) => Promise<void>;
+  setNodeStatus: (id: string, status: NodeStatus) => Promise<void>;
 }
 
 /**
  * Хук управления открытым проектом.
  *
- * Хранит проект, выбранную ноду, свёрнутые ветки и ошибки открытия.
+ * Хранит проект, выбранную ноду, свёрнутые ветки и ошибки открытия/сохранения.
  * Все вызовы к диску идут через `projectStorage`; здесь только UI-состояние.
  */
 export function useProject(): UseProjectResult {
@@ -38,6 +52,7 @@ export function useProject(): UseProjectResult {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [error, setError] = useState<ProjectError | null>(null);
+  const [saveError, setSaveError] = useState<ProjectError | null>(null);
   const [pendingCreate, setPendingCreate] = useState(false);
 
   /** Индекс родителей строится один раз при смене проекта. */
@@ -56,6 +71,7 @@ export function useProject(): UseProjectResult {
       setSelectedId(null);
       setCollapsed(new Set());
       setError(null);
+      setSaveError(null);
       setPendingCreate(false);
       return;
     }
@@ -108,11 +124,104 @@ export function useProject(): UseProjectResult {
     });
   }, []);
 
+  /**
+   * Универсальное обновление проекта.
+   *
+   * Применяет чистую доменную функцию к текущему проекту, валидирует результат,
+   * атомарно сохраняет на диск и только после успеха меняет состояние.
+   * Любая ошибка домена или хранилища попадает в `saveError`.
+   */
+  const update = useCallback(
+    async (compute: (project: Project) => Project): Promise<void> => {
+      if (project === null) {
+        return;
+      }
+
+      let next: Project;
+      try {
+        next = compute(project);
+      } catch (error) {
+        if (error instanceof DomainError) {
+          setSaveError({ code: "DOMAIN", message: error.message });
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      const result = await saveProject(next);
+      if (result.kind === "error") {
+        setSaveError({
+          code: result.code,
+          message: result.message,
+          problems: result.problems,
+        });
+        return;
+      }
+
+      const oldIds = project.nodes;
+      const newIds = Object.keys(next.nodes).filter((id) => !(id in oldIds));
+
+      let nextSelectedId = selectedId;
+      if (newIds.length === 1) {
+        nextSelectedId = newIds[0];
+      } else if (selectedId !== null && !(selectedId in next.nodes)) {
+        nextSelectedId = null;
+      }
+
+      setProject(next);
+      setSaveError(null);
+      setSelectedId(nextSelectedId);
+    },
+    [project, selectedId],
+  );
+
+  /** Создаёт узел: в корень, если `parentId === null`, иначе — ребёнком. */
+  const createNodeCallback = useCallback(
+    async (parentId: string | null, title: string): Promise<void> => {
+      await update((p) => createNode(p, title, parentId));
+    },
+    [update],
+  );
+
+  /** Переименовывает узел. */
+  const renameNodeCallback = useCallback(
+    async (id: string, title: string): Promise<void> => {
+      await update((p) => renameNode(p, id, title));
+    },
+    [update],
+  );
+
+  /** Удаляет узел вместе с поддеревом. */
+  const deleteNodeCallback = useCallback(
+    async (id: string): Promise<void> => {
+      await update((p) => deleteNode(p, id).project);
+    },
+    [update],
+  );
+
+  /** Перемещает узел к другому родителю или переставляет внутри текущего. */
+  const moveNodeCallback = useCallback(
+    async (id: string, newParentId: string | null, index?: number): Promise<void> => {
+      await update((p) => moveNode(p, id, newParentId, index));
+    },
+    [update],
+  );
+
+  /** Меняет статус узла. */
+  const setNodeStatusCallback = useCallback(
+    async (id: string, status: NodeStatus): Promise<void> => {
+      await update((p) => setStatus(p, id, status));
+    },
+    [update],
+  );
+
   return {
     project,
     selectedId,
     collapsed,
     error,
+    saveError,
     pendingCreate,
     parentIndex,
     open,
@@ -120,5 +229,11 @@ export function useProject(): UseProjectResult {
     cancelCreate,
     select,
     toggle,
+    update,
+    createNode: createNodeCallback,
+    renameNode: renameNodeCallback,
+    deleteNode: deleteNodeCallback,
+    moveNode: moveNodeCallback,
+    setNodeStatus: setNodeStatusCallback,
   };
 }

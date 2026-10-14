@@ -146,6 +146,31 @@ button {
   overflow: hidden;
 }
 
+.tree-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--surface);
+  flex-shrink: 0;
+}
+
+.tree-toolbar .toolbar-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tree-create-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background-color: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
 .tree-list {
   flex: 1;
   overflow: auto;
@@ -167,6 +192,33 @@ button {
 .tree-row.selected .tree-node {
   background-color: var(--accent);
   color: #ffffff;
+}
+
+.tree-row.drop-child .tree-node {
+  background-color: var(--accent-hover);
+  color: #ffffff;
+}
+
+.drop-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.drop-line-before {
+  top: 0;
+}
+
+.drop-line-after {
+  bottom: 0;
+}
+
+.tree-row-wrapper {
+  position: relative;
 }
 
 .tree-toggle,
@@ -290,10 +342,44 @@ button {
   margin: 0;
 }
 
+.details-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .details-title {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 20px;
   font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
+.details-title-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background-color: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.details-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.details-delete:hover {
+  background-color: var(--error);
+  border-color: var(--error);
 }
 
 .details-status {
@@ -301,6 +387,16 @@ button {
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
+}
+
+.details-status-select {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
 }
 
 .details-dates {

@@ -46,8 +46,14 @@ function insertAt<T>(arr: T[], item: T, index?: number): void {
   arr.splice(index, 0, item);
 }
 
-/** Находит текущее расположение узла: родителя (null для корня) и индекс среди братьев. */
-function findCurrentLocation(
+/**
+ * Находит текущее расположение узла: родителя (`null` для корня) и индекс среди братьев.
+ *
+ * Используется UI при вычислении позиции вставки после drag&drop:
+ * `moveNode` сначала удаляет узел из старого места, поэтому индекс цели
+ * нужно скорректировать на сдвиг, если старый и новый родитель совпадают.
+ */
+export function findCurrentLocation(
   project: Project,
   id: string,
 ): { parentId: string | null; index: number } {

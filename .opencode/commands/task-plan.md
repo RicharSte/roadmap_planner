@@ -4,7 +4,7 @@ agent: build
 ---
 Plan task $ARGUMENTS. Do not edit source code in this command.
 
-0. Load skill `caveman` (lite) for chat replies. Plan file itself: normal full Russian.
+0. Load skill `caveman` (full) for chat replies. Plan file itself: normal full Russian.
 1. If $ARGUMENTS is empty, take the first `todo` task in `docs/backlog.md`. Never invent tasks.
    Read `docs/handoff.md`, the task row, `docs/mvp-done.md`, relevant ADRs in `docs/decisions/`,
    and only the code files the task touches.
