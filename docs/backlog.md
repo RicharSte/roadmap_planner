@@ -23,6 +23,6 @@ Plan / Build: **C** = Claude Code, **K** = OpenCode + Kimi K2.7 Code, **M** = Op
 | T-012  | Reload project from disk; invalid JSON on reload → autosave must not overwrite the file (T-005 risk, test it) | C    | M     | done   |
 | T-013  | User-readable errors pass (delete confirmation moved to T-010b)                                               | C    | M     | done   |
 | T-014  | macOS build `.app`/`.dmg`, README «Как установить», full manual run of `docs/mvp-done.md`                     | C    | M     | done   |
-| T-015  | Windows build (`.msi`/`.exe`) — method decided by user                                                        | C    | M     | todo   |
+| T-015  | Windows build (`.msi`/`.exe`) — method decided by user                                                        | C    | M     | done   |
 
 Acceptance criteria for each task live in `docs/plans/<id>.md`.

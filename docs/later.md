@@ -306,3 +306,7 @@
 - [T-012] Визуально отключать кнопки дерева и панели деталей при `locked` (UX) — сейчас только баннер и отказ записи
 - [T-013] Упростить `fromRustError` в `src/storage/projectStorage.ts` (биомаркер `complex_conditional`,
   hotspot 0.52) — не критично сейчас, но стоит пересмотреть при следующей правке этого файла
+- [T-015] Рефакторинг `src-tauri/src/project.rs` (hotspot 0.96), `src-tauri/src/atomic.rs` (hotspot 0.70),
+  `src-tauri/src/paths.rs` (hotspot 0.52, `validate_relative_path` — `nested_complexity`/`complex_method`) —
+  все три без прямых unit-тестов (`test_gap`), только через интеграционные вызовы; покрыть тестами и
+  разбить при следующей существенной правке
