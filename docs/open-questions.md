@@ -17,14 +17,14 @@ Resolve before the related backlog task. Record the answer as an ADR in `docs/de
 
 None block current MVP tasks. Column "Before" = latest task that needs the answer.
 
-| #   | Question                                                                                     | Default if unanswered                      | Before |
-| --- | -------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
-| Q9  | Keep all user-facing UI strings in one module (`src/ui/strings.ts`)? Cheap hook for B2C i18n | Yes, done inside T-013, no i18n library    | T-013  |
-| Q10 | Final product name and bundle `identifier` (now `tauri-app` / `dev.roadmap.app`)?            | Rename `productName` only, keep identifier | T-014  |
-| Q11 | B2C: target audience and monetization (free / one-time / subscription)?                      | Undecided, blocks 2.0 planning             | T-301  |
-| Q12 | B2C: are accounts or cloud sync acceptable, or stay strictly local-first?                    | Strictly local-first                       | T-301  |
-| Q13 | B2C: languages (RU/EN) and platforms (web version?)                                          | RU + EN, desktop only                      | T-304  |
-| Q14 | 1.1: forbid a dependency on an ancestor/descendant? (ADR 0010)                               | Forbid                                     | T-104  |
-| Q15 | 1.2: deliver agent brief as file `briefs/<id>.md` or copy to clipboard?                      | File (no clipboard plugin/permission)      | T-204  |
+| #   | Question                                                                                       | Default if unanswered                      | Before |
+| --- | ---------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
+| Q9  | Keep all user-facing UI strings in one module (`src/ui/strings.ts`)? Cheap hook for B2C i18n   | Yes, done inside T-013, no i18n library    | T-013  |
+| Q10 | Final product name and bundle `identifier` (now `tauri-app` / `dev.roadmap.app`)?              | Rename `productName` only, keep identifier | T-014  |
+| Q11 | B2C: target audience and monetization (free / one-time / subscription)?                        | Undecided, blocks 2.0 planning             | T-301  |
+| Q12 | B2C: are accounts or cloud sync acceptable, or stay strictly local-first?                      | Strictly local-first                       | T-301  |
+| Q13 | B2C: additional platforms (web version?) — languages moved to T-209 (1.2), see `docs/later.md` | Desktop only                               | T-301  |
+| Q14 | 1.1: forbid a dependency on an ancestor/descendant? (ADR 0010)                                 | Forbid                                     | T-104  |
+| Q15 | 1.2: deliver agent brief as file `briefs/<id>.md` or copy to clipboard?                        | File (no clipboard plugin/permission)      | T-204  |
 
 New questions go here.

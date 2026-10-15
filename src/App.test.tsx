@@ -1075,8 +1075,9 @@ describe("App", () => {
     fireEvent.click(screen.getByTestId("reload-button"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("reload-error-banner")).toHaveTextContent("INVALID_JSON");
+      expect(screen.getByTestId("reload-error-banner")).toHaveTextContent("повреждён");
     });
+    expect(screen.getByTestId("reload-error-code")).toHaveTextContent("INVALID_JSON");
 
     fireEvent.click(screen.getByTestId("details-rename-button"));
     const input = screen.getByTestId("details-rename-input");
@@ -1153,5 +1154,39 @@ describe("App", () => {
     const reloadOrder = vi.mocked(reloadProject).mock.invocationCallOrder[0];
     expect(writeOrder).toBeLessThan(reloadOrder);
     expect(window.confirm).not.toHaveBeenCalled();
+  });
+
+  it("показывает русский текст ошибки storage и машинный код отдельно", async () => {
+    vi.mocked(openProject).mockResolvedValue({
+      kind: "error",
+      code: "NOT_A_DIRECTORY",
+      message: "selected path is not a directory",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("не является папкой");
+    });
+
+    // Машинный код виден в DOM как отдельный узел (data-testid), не как часть текста сообщения.
+    expect(screen.getByTestId("error-code")).toHaveTextContent("NOT_A_DIRECTORY");
+  });
+
+  it("для ошибки FILE_TOO_LARGE показывает лимит 10 МБ в баннере", async () => {
+    vi.mocked(openProject).mockResolvedValue({
+      kind: "error",
+      code: "FILE_TOO_LARGE",
+      message: "file exceeds limit",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("10 МБ");
+    });
+    expect(screen.getByTestId("error-code")).toHaveTextContent("FILE_TOO_LARGE");
   });
 });

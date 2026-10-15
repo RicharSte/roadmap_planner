@@ -3,12 +3,26 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { DetailsPanel } from "./ui/DetailsPanel";
 import { TreeSidebar } from "./ui/TreeSidebar";
 import { useProject } from "./ui/useProject";
+import { getStorageErrorMessage } from "./ui/strings";
+import type { StorageErrorCode } from "./storage/projectStorage";
 import type { DescriptionEditorHandle } from "./ui/DescriptionEditor";
 import "./App.css";
 
 const MIN_SIDEBAR_WIDTH = 180;
 const MAX_SIDEBAR_RATIO = 0.6;
 const INITIAL_SIDEBAR_WIDTH = 280;
+
+/**
+ * Подбирает русский текст баннера для указанной ошибки.
+ * Доменные ошибки (`DOMAIN`) уже несут готовый русский текст в `message`,
+ * ошибки слоя storage показываются через таблицу переводов.
+ */
+function formatErrorMessage(code: string, message: string): string {
+  if (code === "DOMAIN") {
+    return message;
+  }
+  return getStorageErrorMessage(code as StorageErrorCode);
+}
 
 function App() {
   const {
@@ -146,8 +160,10 @@ function App() {
       {error !== null && (
         <div className="error-banner" role="alert">
           <strong>Не удалось открыть проект</strong>
-          <span className="error-code">{error.code}</span>
-          <span className="error-message">{error.message}</span>
+          <span className="error-message">{formatErrorMessage(error.code, error.message)}</span>
+          <span className="error-code" data-testid="error-code">
+            {error.code}
+          </span>
           {error.problems !== undefined && error.problems.length > 0 && (
             <ul className="error-problems">
               {error.problems.map((problem, index) => (
@@ -167,8 +183,12 @@ function App() {
           data-testid="reload-error-banner"
         >
           <strong>Не удалось перезагрузить проект с диска</strong>
-          <span className="error-code">{reloadError.code}</span>
-          <span className="error-message">{reloadError.message}</span>
+          <span className="error-message">
+            {formatErrorMessage(reloadError.code, reloadError.message)}
+          </span>
+          <span className="error-code" data-testid="reload-error-code">
+            {reloadError.code}
+          </span>
           {reloadError.problems !== undefined && reloadError.problems.length > 0 && (
             <ul className="error-problems">
               {reloadError.problems.map((problem, index) => (
@@ -188,8 +208,12 @@ function App() {
           data-testid="save-error-banner"
         >
           <strong>Не удалось сохранить изменения</strong>
-          <span className="error-code">{saveError.code}</span>
-          <span className="error-message">{saveError.message}</span>
+          <span className="error-message">
+            {formatErrorMessage(saveError.code, saveError.message)}
+          </span>
+          <span className="error-code" data-testid="save-error-code">
+            {saveError.code}
+          </span>
           {saveError.problems !== undefined && saveError.problems.length > 0 && (
             <ul className="error-problems">
               {saveError.problems.map((problem, index) => (
