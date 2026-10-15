@@ -1,3 +1,4 @@
+import * as React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   render,
@@ -10,12 +11,44 @@ import {
 } from "@testing-library/react";
 import { DomainError } from "./domain/types";
 import App from "./App";
-import { openProject, createProject, saveProject } from "./storage/projectStorage";
+import {
+  openProject,
+  createProject,
+  saveProject,
+  readDescription,
+  writeDescription,
+  deleteDescriptions,
+} from "./storage/projectStorage";
 
 vi.mock("./storage/projectStorage", () => ({
   openProject: vi.fn(),
   createProject: vi.fn(),
   saveProject: vi.fn(),
+  readDescription: vi.fn(),
+  writeDescription: vi.fn(),
+  deleteDescriptions: vi.fn(),
+}));
+
+vi.mock("@uiw/react-codemirror", () => ({
+  default: React.forwardRef(function MockCodeMirror(
+    props: { value?: string; onChange?: (value: string) => void; editable?: boolean },
+    ref: React.ForwardedRef<HTMLTextAreaElement>,
+  ) {
+    return (
+      <textarea
+        ref={ref}
+        value={props.value ?? ""}
+        onChange={(event) => props.onChange?.(event.target.value)}
+        readOnly={props.editable === false}
+        data-testid="description-codemirror"
+      />
+    );
+  }),
+  EditorView: { lineWrapping: "lineWrapping" },
+}));
+
+vi.mock("@codemirror/lang-markdown", () => ({
+  markdown: vi.fn(() => "markdown-extension"),
 }));
 
 afterEach(() => {
@@ -121,10 +154,17 @@ function mockRect(element: HTMLElement, height = 30): void {
   }));
 }
 
+function setupDescriptionLoading(content: string): void {
+  vi.mocked(readDescription).mockResolvedValue({ kind: "loaded", content });
+}
+
 describe("App", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(saveProject).mockResolvedValue({ kind: "saved" });
+    vi.mocked(writeDescription).mockResolvedValue({ kind: "saved" });
+    vi.mocked(deleteDescriptions).mockResolvedValue({ kind: "saved" });
+    vi.mocked(readDescription).mockResolvedValue({ kind: "missing" });
   });
 
   it("shows the toolbar and empty details on start", () => {
@@ -140,7 +180,7 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
 
     await waitFor(() => {
-      expect(screen.getByTestId("tree-row-n_root")).toHaveTextContent("Root node");
+      expect(screen.getByTestId("tree-row-n_root")).toBeInTheDocument();
     });
     expect(screen.getByTestId("tree-row-n_child1")).toHaveTextContent("First child");
     expect(screen.getByTestId("tree-row-n_child2")).toHaveTextContent("Second child");
@@ -148,6 +188,7 @@ describe("App", () => {
 
   it("shows node details when a row is selected", async () => {
     openSample();
+    setupDescriptionLoading("Hello **world**");
 
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
@@ -158,7 +199,9 @@ describe("App", () => {
       expect(screen.getByRole("heading", { name: "First child" })).toBeInTheDocument();
     });
     expect(within(screen.getByTestId("details-status")).getByText("Готово")).toBeInTheDocument();
-    expect(screen.getByText(/Описание: descriptions\/n_child1\.md/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("description-preview")).toHaveTextContent("Hello world");
+    });
   });
 
   it("collapses and expands children", async () => {
@@ -351,7 +394,45 @@ describe("App", () => {
     ).not.toBeNull();
   });
 
-  it("deletes the selected node immediately", async () => {
+  it("shows delete confirmation with node and file counts", async () => {
+    openSample();
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_root"));
+    await waitFor(() => screen.getByRole("heading", { name: "Root node" }));
+
+    fireEvent.click(screen.getByTestId("details-delete-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("delete-confirmation")).toHaveTextContent(
+        "нод: 3 (из них дочерних: 2), файлов описаний: 1",
+      );
+    });
+  });
+
+  it("deletes the selected branch after confirmation", async () => {
+    openSample();
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_root"));
+    await waitFor(() => screen.getByRole("heading", { name: "Root node" }));
+
+    fireEvent.click(screen.getByTestId("details-delete-button"));
+    await waitFor(() => screen.getByTestId("delete-confirmation"));
+    fireEvent.click(screen.getByTestId("delete-confirm-button"));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("tree-row-n_root")).not.toBeInTheDocument();
+    });
+    expect(saveProject).toHaveBeenCalledTimes(1);
+    expect(deleteDescriptions).toHaveBeenCalledWith(["descriptions/n_child1.md"]);
+  });
+
+  it("cancels deletion without calling saveProject", async () => {
     openSample();
 
     render(<App />);
@@ -361,11 +442,65 @@ describe("App", () => {
     await waitFor(() => screen.getByRole("heading", { name: "First child" }));
 
     fireEvent.click(screen.getByTestId("details-delete-button"));
+    await waitFor(() => screen.getByTestId("delete-confirmation"));
+    fireEvent.click(screen.getByTestId("delete-cancel-button"));
+
+    expect(saveProject).not.toHaveBeenCalled();
+    expect(screen.getByTestId("tree-row-n_child1")).toBeInTheDocument();
+  });
+
+  it("does not delete description files when saveProject fails", async () => {
+    openSample();
+    vi.mocked(saveProject).mockResolvedValue({
+      kind: "error",
+      code: "IO_ERROR",
+      message: "disk full",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByRole("heading", { name: "First child" }));
+
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByRole("heading", { name: "First child" }));
+
+    fireEvent.click(screen.getByTestId("details-delete-button"));
+    await waitFor(() => screen.getByTestId("delete-confirmation"));
+    fireEvent.click(screen.getByTestId("delete-confirm-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-error-banner")).toHaveTextContent("IO_ERROR");
+    });
+    expect(deleteDescriptions).not.toHaveBeenCalled();
+    expect(screen.getByTestId("tree-row-n_child1")).toBeInTheDocument();
+  });
+
+  it("shows save error banner when deleteDescriptions fails but tree is already updated", async () => {
+    openSample();
+    vi.mocked(deleteDescriptions).mockResolvedValue({
+      kind: "error",
+      code: "IO_ERROR",
+      message: "cannot remove file",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByRole("heading", { name: "First child" }));
+
+    fireEvent.click(screen.getByTestId("details-delete-button"));
+    await waitFor(() => screen.getByTestId("delete-confirmation"));
+    fireEvent.click(screen.getByTestId("delete-confirm-button"));
 
     await waitFor(() => {
       expect(screen.queryByTestId("tree-row-n_child1")).not.toBeInTheDocument();
     });
-    expect(screen.getByText("Выберите ноду")).toBeInTheDocument();
+    expect(screen.getByTestId("save-error-banner")).toHaveTextContent("IO_ERROR");
   });
 
   it("moves a node as a child via drag middle zone", async () => {
@@ -441,9 +576,163 @@ describe("App", () => {
     expect(screen.getByTestId("tree-children-n_root")).toHaveTextContent("First child");
   });
 
-  it("shows save error banner and keeps the tree unchanged", async () => {
+  it("creates a description file and updates roadmap.json", async () => {
     openSample();
-    vi.mocked(saveProject).mockResolvedValue({
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_root"));
+    await waitFor(() => screen.getByRole("heading", { name: "Root node" }));
+
+    fireEvent.click(screen.getByTestId("create-description-button"));
+
+    await waitFor(() => {
+      expect(writeDescription).toHaveBeenCalledWith("descriptions/n_root.md", "");
+    });
+    expect(saveProject).toHaveBeenCalled();
+    expect(vi.mocked(saveProject).mock.calls[0][0].nodes.n_root.descriptionPath).toBe(
+      "descriptions/n_root.md",
+    );
+
+    const writeOrder = vi.mocked(writeDescription).mock.invocationCallOrder[0];
+    const saveOrder = vi.mocked(saveProject).mock.invocationCallOrder[0];
+    expect(writeOrder).toBeLessThan(saveOrder);
+  });
+
+  it("does not update roadmap.json when description creation fails", async () => {
+    openSample();
+    vi.mocked(writeDescription).mockResolvedValue({
+      kind: "error",
+      code: "IO_ERROR",
+      message: "cannot write",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_root"));
+    await waitFor(() => screen.getByRole("heading", { name: "Root node" }));
+
+    fireEvent.click(screen.getByTestId("create-description-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-error-banner")).toHaveTextContent("IO_ERROR");
+    });
+    expect(saveProject).not.toHaveBeenCalled();
+  });
+
+  it("opens preview mode for non-empty description", async () => {
+    openSample();
+    setupDescriptionLoading("Some description");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("description-preview")).toHaveTextContent("Some description");
+    });
+    expect(screen.getByTestId("description-mode-preview")).toBeDisabled();
+  });
+
+  it("opens editor mode for missing description with a hint", async () => {
+    openSample();
+    vi.mocked(readDescription).mockResolvedValue({ kind: "missing" });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Файл не найден/i)).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("description-codemirror")).toBeInTheDocument();
+    expect(screen.getByTestId("description-mode-edit")).toBeDisabled();
+  });
+
+  it("shows read-only editor when description read fails", async () => {
+    openSample();
+    vi.mocked(readDescription).mockResolvedValue({
+      kind: "error",
+      code: "NOT_UTF8",
+      message: "not utf8",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Не удалось загрузить описание/i)).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("description-codemirror")).toHaveAttribute("readonly");
+  });
+
+  it("saves description on blur when content changed", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    const textarea = screen.getByTestId("description-codemirror");
+    fireEvent.change(textarea, { target: { value: "Updated text" } });
+    fireEvent.blur(textarea);
+
+    await waitFor(() => {
+      expect(writeDescription).toHaveBeenCalledWith("descriptions/n_child1.md", "Updated text");
+    });
+  });
+
+  it("does not save description on blur when content unchanged", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    fireEvent.blur(screen.getByTestId("description-codemirror"));
+
+    await waitFor(() => {
+      expect(readDescription).toHaveBeenCalled();
+    });
+    expect(writeDescription).not.toHaveBeenCalled();
+  });
+
+  it("saves description when selecting another node", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    fireEvent.change(screen.getByTestId("description-codemirror"), {
+      target: { value: "Autosaved text" },
+    });
+    fireEvent.click(screen.getByTestId("tree-row-button-n_root"));
+
+    await waitFor(() => {
+      expect(writeDescription).toHaveBeenCalledWith("descriptions/n_child1.md", "Autosaved text");
+    });
+  });
+
+  it("shows save error banner when description save fails", async () => {
+    openSample();
+    setupDescriptionLoading("");
+    vi.mocked(writeDescription).mockResolvedValue({
       kind: "error",
       code: "IO_ERROR",
       message: "disk full",
@@ -453,13 +742,38 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
     await waitFor(() => screen.getByTestId("tree-row-n_child1"));
     fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
-    await waitFor(() => screen.getByRole("heading", { name: "First child" }));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
 
-    fireEvent.click(screen.getByTestId("details-delete-button"));
+    fireEvent.change(screen.getByTestId("description-codemirror"), {
+      target: { value: "Updated text" },
+    });
+    fireEvent.blur(screen.getByTestId("description-codemirror"));
 
     await waitFor(() => {
       expect(screen.getByTestId("save-error-banner")).toHaveTextContent("IO_ERROR");
     });
-    expect(screen.getByTestId("tree-row-n_child1")).toBeInTheDocument();
+  });
+
+  it("renders preview without clickable links, images or raw HTML", async () => {
+    openSample();
+    setupDescriptionLoading(
+      "# Title\n\n[link](https://example.com)\n\n![alt text](image.png)\n\n<b>raw</b>\n\n| a | b |\n|---|---|\n| 1 | 2 |",
+    );
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("description-preview")).toHaveTextContent("Title");
+    });
+
+    const preview = screen.getByTestId("description-preview");
+    expect(preview.querySelector("a")).toBeNull();
+    expect(preview.querySelector("img")).toBeNull();
+    expect(preview.querySelector("b")).toBeNull();
+    expect(preview.querySelector("table")).not.toBeNull();
+    expect(preview).toHaveTextContent("alt text");
   });
 });

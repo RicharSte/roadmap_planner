@@ -44,6 +44,16 @@ export type SaveResult =
       problems?: DomainError[];
     };
 
+/** Результат чтения файла описания. */
+export type ReadDescriptionResult =
+  | { kind: "loaded"; content: string }
+  | { kind: "missing" }
+  | {
+      kind: "error";
+      code: StorageErrorCode;
+      message: string;
+    };
+
 /**
  * Преобразует объект ошибки из Rust в домен ошибку хранилища.
  * Rust возвращает `{ code, message }`, поэтому извлекаем эти поля.
@@ -215,6 +225,43 @@ export async function saveProject(project: Project): Promise<SaveResult> {
 export async function writeDescription(path: string, content: string): Promise<SaveResult> {
   try {
     await invoke("write_description", { path, content });
+    return { kind: "saved" };
+  } catch (error) {
+    return { kind: "error", ...fromRustError(error) };
+  }
+}
+
+/**
+ * Читает файл описания `descriptions/<id>.md` из открытого проекта.
+ *
+ * Отсутствующий файл возвращает `{ kind: "missing" }`, а не ошибку:
+ * UI покажет пустой редактор, а запись создаст файл при сохранении.
+ */
+export async function readDescription(path: string): Promise<ReadDescriptionResult> {
+  try {
+    const content = await invoke<string | null>("read_description", { path });
+    if (content === null) {
+      return { kind: "missing" };
+    }
+    return { kind: "loaded", content };
+  } catch (error) {
+    return { kind: "error", ...fromRustError(error) };
+  }
+}
+
+/**
+ * Удаляет файлы описаний в открытом проекте.
+ *
+ * Пустой список не вызывает `invoke`: Rust-команда тоже является no-op,
+ * но лишний IPC не нужен. При ошибке Rust ни один файл не удалён.
+ */
+export async function deleteDescriptions(paths: string[]): Promise<SaveResult> {
+  if (paths.length === 0) {
+    return { kind: "saved" };
+  }
+
+  try {
+    await invoke("delete_descriptions", { paths });
     return { kind: "saved" };
   } catch (error) {
     return { kind: "error", ...fromRustError(error) };

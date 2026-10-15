@@ -1,49 +1,37 @@
-# Handoff: T-009 завершена, следующая — T-010
+# Handoff
 
-## Статус T-009
+## Статус
 
-Задача T-009 (UI — node CRUD, перенос к другому родителю, смена статуса) закрыта.
-Plannotator code review: `approved`, замечаний нет.
+- T-010b завершён: редактор описания, предпросмотр Markdown и подтверждение удаления ветки реализованы, код-ревью пройдено.
+- Следующая задача из backlog: **T-011** — автосохранение описаний (debounce), индикатор несохранённых изменений и предупреждение при закрытии окна с несохранёнными правками.
 
-Проверки:
+## Что сделано в T-010b
 
-- `pnpm test` — 86/86 ✅
-- `pnpm typecheck` — чисто ✅
-- `pnpm lint` — чисто ✅
-- `pnpm format:check` — чисто ✅
-- `grep -r "@tauri-apps" src/ui` — пусто ✅
+- `src/ui/useProject.ts`: колбэки `createDescription`, `loadDescription`, `saveDescription`; удаление ветки теперь сначала сохраняет `roadmap.json`, затем удаляет файлы описаний.
+- `src/ui/DescriptionEditor.tsx`: CodeMirror + переключатель «Редактор/Просмотр», сохранение по blur и при размонтировании.
+- `src/ui/DetailsPanel.tsx`: кнопка «Создать описание», встроенный редактор, блок подтверждения удаления с подсчётом нод и файлов.
+- `src/App.tsx` и `src/App.css`: проводка колбэков и стили.
+- `src/App.test.tsx`: моки CodeMirror (`<textarea>`) и новые сценарии тестирования.
+- Зависимости: `@uiw/react-codemirror`, `@codemirror/lang-markdown`, `react-markdown`, `remark-gfm`.
+- Проверки: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm build`, Rust-проверки — все чистые.
+- `docs/reports/T-010b.md` — полный отчёт.
+- В `docs/later.md` добавлены две UX-идеи: единое поле редактора/просмотра и кликабельные ссылки в предпросмотре.
 
-В `docs/mvp-done.md` отмечены пункты:
+## Контекст для T-011
 
-- Добавить корневую ноду и дочернюю ноду
-- Переименовать ноду, сменить статус (4 фиксированных статуса)
-- Перенести ноду к другому родителю (В данный момент Dnd (Drag and drop) не работает, надо проверить и исправить)
+- Редактор описания сейчас сохраняет только на blur и при смене ноды; debounce ещё не реализован.
+- Ошибки сохранения попадают в `saveError` в `useProject` и отображаются баннером в `App.tsx` — этот механизм можно расширить для индикатора несохранённого состояния.
+- `DescriptionEditor.tsx` отслеживает `draft` и `saved` — отсюда удобно добавить флаг `isDirty` и debounced-вызов `onSave`.
+- Предупреждение при закрытии окна потребует Tauri API (`core:event` / `onWindowClose` через `window.onbeforeunload` не работает в Tauri) — нужно будет согласовать добавление capability/permission.
 
-## Что оставляет T-009
-
-- `src/ui/useProject.ts` теперь центральная точка для изменений проекта: `update(compute)` валидирует, сохраняет и только потом обновляет состояние.
-- В `src/ui/DetailsPanel.tsx` есть кнопки переименования/удаления и селект статуса.
-- В `src/ui/TreeSidebar.tsx` есть кнопки создания нод и drag&drop с тремя зонами.
-- `src/storage/projectStorage.ts` уже умеет `writeDescription(path, content)`.
-- Доменная функция `setDescriptionPath` в `src/domain/tree.ts` готова.
-
-## Следующая задача: T-010
-
-В бэклоге следующая `todo` — T-010: «Description: create descriptions/<id>.md, CodeMirror editor + preview (ADR 0006)».
-
-План `docs/plans/T-010.md` ещё не создан. Перед сборкой нужно:
-
-1. Создать/утвердить план T-010.
-2. Реализовать в UI создание файла описания для ноды, открытие его в CodeMirror 6 (`@uiw/react-codemirror`) и рядом preview на `react-markdown`.
-3. Использовать `writeDescription` из `src/storage/projectStorage.ts` и `setDescriptionPath` из домена.
-4. Не забыть: descriptionPath создаётся один раз и не переименовывается; удалённые ноды пока не чистят `descriptions/` (это T-010/T-013).
-
-## Commit
-
-Предлагаемое сообщение:
+## Рекомендуемое сообщение коммита
 
 ```
-feat(T-009): node CRUD, drag-and-drop move, status select
-```
+feat(T-010b): description editor, preview and delete confirmation
 
-Не коммитил — жду подтверждения.
+- Add CodeMirror markdown editor with editor/preview toggle
+- Save description on blur and node switch
+- Create description writes empty file before updating roadmap.json
+- Delete branch shows confirmation with node/file counts
+- Delete description files after successful roadmap.json save
+```
