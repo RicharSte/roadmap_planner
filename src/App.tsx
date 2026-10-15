@@ -3,6 +3,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { DetailsPanel } from "./ui/DetailsPanel";
 import { TreeSidebar } from "./ui/TreeSidebar";
 import { useProject } from "./ui/useProject";
+import type { DescriptionEditorHandle } from "./ui/DescriptionEditor";
 import "./App.css";
 
 const MIN_SIDEBAR_WIDTH = 180;
@@ -15,8 +16,10 @@ function App() {
     selectedId,
     collapsed,
     error,
+    reloadError,
     saveError,
     pendingCreate,
+    locked,
     open,
     create,
     cancelCreate,
@@ -30,11 +33,14 @@ function App() {
     createDescription,
     loadDescription,
     saveDescription,
+    reload,
   } = useProject();
   const [sidebarWidth, setSidebarWidth] = useState(INITIAL_SIDEBAR_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [descriptionDirty, setDescriptionDirty] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
   const hasUnsavedRef = useRef(false);
+  const descriptionEditorRef = useRef<DescriptionEditorHandle>(null);
 
   useEffect(() => {
     if (!isResizing) {
@@ -60,8 +66,8 @@ function App() {
   }, [isResizing]);
 
   useEffect(() => {
-    hasUnsavedRef.current = descriptionDirty || saveError !== null;
-  }, [descriptionDirty, saveError]);
+    hasUnsavedRef.current = descriptionDirty || saveError !== null || locked;
+  }, [descriptionDirty, saveError, locked]);
 
   useEffect(() => {
     let unlisten: (() => void) | null = null;
@@ -100,11 +106,26 @@ function App() {
     };
   }, []);
 
+  const handleReload = async (): Promise<void> => {
+    await descriptionEditorRef.current?.flush();
+    await reload();
+    setReloadToken((prev) => prev + 1);
+  };
+
   return (
     <div className="app">
       <header className="toolbar">
         <button type="button" className="toolbar-button" onClick={open}>
           Открыть папку…
+        </button>
+        <button
+          type="button"
+          className="toolbar-button"
+          disabled={project === null}
+          onClick={() => void handleReload()}
+          data-testid="reload-button"
+        >
+          Перезагрузить
         </button>
       </header>
 
@@ -130,6 +151,27 @@ function App() {
           {error.problems !== undefined && error.problems.length > 0 && (
             <ul className="error-problems">
               {error.problems.map((problem, index) => (
+                <li key={index}>
+                  {problem.code}: {problem.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {reloadError !== null && (
+        <div
+          className="error-banner reload-error-banner"
+          role="alert"
+          data-testid="reload-error-banner"
+        >
+          <strong>Не удалось перезагрузить проект с диска</strong>
+          <span className="error-code">{reloadError.code}</span>
+          <span className="error-message">{reloadError.message}</span>
+          {reloadError.problems !== undefined && reloadError.problems.length > 0 && (
+            <ul className="error-problems">
+              {reloadError.problems.map((problem, index) => (
                 <li key={index}>
                   {problem.code}: {problem.message}
                 </li>
@@ -191,6 +233,8 @@ function App() {
           onSaveDescription={saveDescription}
           onDescriptionDirtyChange={setDescriptionDirty}
           hasSaveError={saveError !== null}
+          descriptionRef={descriptionEditorRef}
+          reloadToken={reloadToken}
         />
       </div>
     </div>

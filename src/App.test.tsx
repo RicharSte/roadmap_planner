@@ -19,6 +19,7 @@ import {
   readDescription,
   writeDescription,
   deleteDescriptions,
+  reloadProject,
 } from "./storage/projectStorage";
 
 const { mockedWindow } = vi.hoisted(() => ({
@@ -37,6 +38,7 @@ vi.mock("./storage/projectStorage", () => ({
   readDescription: vi.fn(),
   writeDescription: vi.fn(),
   deleteDescriptions: vi.fn(),
+  reloadProject: vi.fn(),
 }));
 
 vi.mock("@tauri-apps/api/window", () => ({
@@ -946,5 +948,210 @@ describe("App", () => {
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(window.confirm).toHaveBeenCalledTimes(1);
     expect(mockedWindow.destroy).not.toHaveBeenCalled();
+  });
+
+  it("disables reload button until a project is opened", async () => {
+    render(<App />);
+    expect(screen.getByTestId("reload-button")).toBeDisabled();
+
+    openSample();
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+
+    expect(screen.getByTestId("reload-button")).not.toBeDisabled();
+  });
+
+  it("successful reload updates tree and preserves existing selection", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    const reloadedProject = {
+      ...sampleProject,
+      nodes: {
+        ...sampleProject.nodes,
+        n_child1: { ...sampleProject.nodes.n_child1, title: "Reloaded child" },
+      },
+    };
+    vi.mocked(reloadProject).mockResolvedValue({ kind: "opened", project: reloadedProject });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByRole("heading", { name: "First child" }));
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Reloaded child" })).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("tree-row-n_child1")).toHaveTextContent("Reloaded child");
+  });
+
+  it("successful reload clears selection when selected node was removed", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    const reloadedProject = {
+      ...sampleProject,
+      nodes: {
+        n_root: { ...sampleProject.nodes.n_root, childrenIds: [] },
+      },
+      rootIds: ["n_root"],
+    };
+    vi.mocked(reloadProject).mockResolvedValue({ kind: "opened", project: reloadedProject });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByRole("heading", { name: "First child" }));
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Выберите ноду")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("tree-children-n_root")).not.toBeInTheDocument();
+  });
+
+  it("successful reload forgets collapsed state for ids that disappeared", async () => {
+    openSample();
+
+    const otherRootProject = {
+      ...sampleProject,
+      rootIds: ["n_other"],
+      nodes: {
+        n_other: {
+          id: "n_other",
+          title: "Other root",
+          childrenIds: [],
+          status: "unstarted" as const,
+          descriptionPath: null,
+          createdAt: "2026-10-10T10:00:00.000Z",
+          updatedAt: "2026-10-11T10:00:00.000Z",
+        },
+      },
+    };
+
+    vi.mocked(reloadProject)
+      .mockResolvedValueOnce({ kind: "opened", project: otherRootProject })
+      .mockResolvedValueOnce({ kind: "opened", project: sampleProject });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+
+    fireEvent.click(screen.getByTestId("tree-toggle-n_root"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("tree-children-n_root")).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+    await waitFor(() => screen.getByTestId("tree-row-n_other"));
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("tree-children-n_root")).toBeInTheDocument();
+    });
+  });
+
+  it("shows reload error banner and blocks saves after invalid JSON reload", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    vi.mocked(reloadProject).mockResolvedValue({
+      kind: "error",
+      code: "INVALID_JSON",
+      message: "roadmap.json is not valid JSON",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_root"));
+    await waitFor(() => screen.getByRole("heading", { name: "Root node" }));
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("reload-error-banner")).toHaveTextContent("INVALID_JSON");
+    });
+
+    fireEvent.click(screen.getByTestId("details-rename-button"));
+    const input = screen.getByTestId("details-rename-input");
+    fireEvent.change(input, { target: { value: "New title" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Root node" })).toBeInTheDocument();
+    });
+    expect(saveProject).not.toHaveBeenCalled();
+  });
+
+  it("unblocks saves after the next successful reload", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    vi.mocked(reloadProject)
+      .mockResolvedValueOnce({
+        kind: "error",
+        code: "INVALID_PROJECT",
+        message: "bad project",
+      })
+      .mockResolvedValueOnce({ kind: "opened", project: sampleProject });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_root"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_root"));
+    await waitFor(() => screen.getByRole("heading", { name: "Root node" }));
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+    await waitFor(() => screen.getByTestId("reload-error-banner"));
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("reload-error-banner")).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("details-rename-button"));
+    const input = screen.getByTestId("details-rename-input");
+    fireEvent.change(input, { target: { value: "Renamed root" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Renamed root" })).toBeInTheDocument();
+    });
+    expect(saveProject).toHaveBeenCalledTimes(1);
+  });
+
+  it("flushes unsaved description before reload without confirmation dialog", async () => {
+    openSample();
+    setupDescriptionLoading("");
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.mocked(reloadProject).mockResolvedValue({ kind: "opened", project: sampleProject });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    fireEvent.change(screen.getByTestId("description-codemirror"), {
+      target: { value: "Draft text" },
+    });
+
+    fireEvent.click(screen.getByTestId("reload-button"));
+
+    await waitFor(() => {
+      expect(writeDescription).toHaveBeenCalledWith("descriptions/n_child1.md", "Draft text");
+    });
+    expect(reloadProject).toHaveBeenCalledTimes(1);
+
+    const writeOrder = vi.mocked(writeDescription).mock.invocationCallOrder[0];
+    const reloadOrder = vi.mocked(reloadProject).mock.invocationCallOrder[0];
+    expect(writeOrder).toBeLessThan(reloadOrder);
+    expect(window.confirm).not.toHaveBeenCalled();
   });
 });
