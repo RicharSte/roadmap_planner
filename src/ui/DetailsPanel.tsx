@@ -15,6 +15,8 @@ export interface DetailsPanelProps {
     path: string,
   ) => Promise<import("../storage/projectStorage").ReadDescriptionResult>;
   onSaveDescription: (path: string, content: string) => Promise<boolean>;
+  onDescriptionDirtyChange?: (dirty: boolean) => void;
+  hasSaveError?: boolean;
 }
 
 /**
@@ -33,6 +35,8 @@ export function DetailsPanel({
   onCreateDescription,
   onLoadDescription,
   onSaveDescription,
+  onDescriptionDirtyChange,
+  hasSaveError = false,
 }: DetailsPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -233,6 +237,8 @@ export function DetailsPanel({
             path={node.descriptionPath}
             onLoad={onLoadDescription}
             onSave={onSaveDescription}
+            onDirtyChange={onDescriptionDirtyChange}
+            hasSaveError={hasSaveError}
           />
         )}
       </div>

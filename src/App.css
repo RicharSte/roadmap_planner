@@ -437,8 +437,15 @@ button {
 
 .description-mode-switch {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.description-dirty {
+  margin-left: auto;
+  color: var(--error);
+  font-size: 12px;
 }
 
 .description-mode-switch button {

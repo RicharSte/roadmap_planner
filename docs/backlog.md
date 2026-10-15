@@ -19,7 +19,7 @@ Plan / Build: **C** = Claude Code, **K** = OpenCode + Kimi K2.7 Code, **M** = Op
 | T-009  | UI: node CRUD, move to parent, status select                                                                  | K    | K     | done   |
 | T-010  | Fix DnD from T-009; Rust + storage: read / delete `descriptions/<id>.md` + tests                              | C    | K     | done   |
 | T-010b | UI: create description, CodeMirror editor + preview (ADR 0006), delete confirmation with file count           | C    | K     | done   |
-| T-011  | Autosave (debounced) with error display; предупреждение при закрытии с несохранёнными правками                | K    | K     | todo   |
+| T-011  | Autosave (debounced) with error display; предупреждение при закрытии с несохранёнными правками                | K    | K     | done   |
 | T-012  | Reload project from disk; invalid JSON on reload → autosave must not overwrite the file (T-005 risk, test it) | K    | M     | todo   |
 | T-013  | User-readable errors pass (delete confirmation moved to T-010b)                                               | K    | M     | todo   |
 | T-014  | macOS build `.app`/`.dmg`, README «Как установить», full manual run of `docs/mvp-done.md`                     | C    | M     | todo   |

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { DetailsPanel } from "./ui/DetailsPanel";
 import { TreeSidebar } from "./ui/TreeSidebar";
 import { useProject } from "./ui/useProject";
@@ -32,6 +33,8 @@ function App() {
   } = useProject();
   const [sidebarWidth, setSidebarWidth] = useState(INITIAL_SIDEBAR_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
+  const [descriptionDirty, setDescriptionDirty] = useState(false);
+  const hasUnsavedRef = useRef(false);
 
   useEffect(() => {
     if (!isResizing) {
@@ -55,6 +58,47 @@ function App() {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isResizing]);
+
+  useEffect(() => {
+    hasUnsavedRef.current = descriptionDirty || saveError !== null;
+  }, [descriptionDirty, saveError]);
+
+  useEffect(() => {
+    let unlisten: (() => void) | null = null;
+    let cancelled = false;
+
+    async function setupCloseHandler(): Promise<void> {
+      const currentWindow = getCurrentWindow();
+      unlisten = await currentWindow.onCloseRequested((event) => {
+        if (!hasUnsavedRef.current) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const confirmed = window.confirm(
+          "Есть несохранённые изменения. Закрыть приложение без сохранения?",
+        );
+
+        if (confirmed) {
+          void currentWindow.destroy();
+        }
+      });
+
+      if (cancelled && unlisten !== null) {
+        unlisten();
+      }
+    }
+
+    void setupCloseHandler();
+
+    return () => {
+      cancelled = true;
+      if (unlisten !== null) {
+        unlisten();
+      }
+    };
+  }, []);
 
   return (
     <div className="app">
@@ -145,6 +189,8 @@ function App() {
           onCreateDescription={createDescription}
           onLoadDescription={loadDescription}
           onSaveDescription={saveDescription}
+          onDescriptionDirtyChange={setDescriptionDirty}
+          hasSaveError={saveError !== null}
         />
       </div>
     </div>
