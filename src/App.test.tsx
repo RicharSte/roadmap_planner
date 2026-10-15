@@ -8,6 +8,7 @@ import {
   cleanup,
   within,
   createEvent,
+  act,
 } from "@testing-library/react";
 import { DomainError } from "./domain/types";
 import App from "./App";
@@ -20,6 +21,15 @@ import {
   deleteDescriptions,
 } from "./storage/projectStorage";
 
+const { mockedWindow } = vi.hoisted(() => ({
+  mockedWindow: {
+    onCloseRequested: vi.fn<
+      (handler: (event: { preventDefault: () => void }) => void) => () => void
+    >(() => vi.fn()),
+    destroy: vi.fn(),
+  },
+}));
+
 vi.mock("./storage/projectStorage", () => ({
   openProject: vi.fn(),
   createProject: vi.fn(),
@@ -27,6 +37,10 @@ vi.mock("./storage/projectStorage", () => ({
   readDescription: vi.fn(),
   writeDescription: vi.fn(),
   deleteDescriptions: vi.fn(),
+}));
+
+vi.mock("@tauri-apps/api/window", () => ({
+  getCurrentWindow: vi.fn(() => mockedWindow),
 }));
 
 vi.mock("@uiw/react-codemirror", () => ({
@@ -53,6 +67,7 @@ vi.mock("@codemirror/lang-markdown", () => ({
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });
 
 const sampleProject = {
@@ -775,5 +790,161 @@ describe("App", () => {
     expect(preview.querySelector("b")).toBeNull();
     expect(preview.querySelector("table")).not.toBeNull();
     expect(preview).toHaveTextContent("alt text");
+  });
+
+  it("autosaves description after debounce without blur", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    vi.useFakeTimers();
+
+    const textarea = screen.getByTestId("description-codemirror");
+    fireEvent.change(textarea, { target: { value: "First" } });
+    fireEvent.change(textarea, { target: { value: "Second" } });
+    fireEvent.change(textarea, { target: { value: "Final text" } });
+
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(writeDescription).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    vi.useRealTimers();
+
+    await waitFor(() => {
+      expect(writeDescription).toHaveBeenCalledTimes(1);
+      expect(writeDescription).toHaveBeenCalledWith("descriptions/n_child1.md", "Final text");
+    });
+  });
+
+  it("shows and hides unsaved indicator around debounce save", async () => {
+    openSample();
+    setupDescriptionLoading("");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    vi.useFakeTimers();
+
+    fireEvent.change(screen.getByTestId("description-codemirror"), {
+      target: { value: "Draft" },
+    });
+
+    expect(screen.getByTestId("description-dirty-indicator")).toHaveTextContent("Не сохранено");
+
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    vi.useRealTimers();
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("description-dirty-indicator")).not.toBeInTheDocument();
+    });
+  });
+
+  it("keeps unsaved indicator visible when description save fails", async () => {
+    openSample();
+    setupDescriptionLoading("");
+    vi.mocked(writeDescription).mockResolvedValue({
+      kind: "error",
+      code: "IO_ERROR",
+      message: "disk full",
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    fireEvent.change(screen.getByTestId("description-codemirror"), {
+      target: { value: "Updated text" },
+    });
+    fireEvent.blur(screen.getByTestId("description-codemirror"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("save-error-banner")).toHaveTextContent("IO_ERROR");
+    });
+    expect(screen.getByTestId("description-dirty-indicator")).toHaveTextContent("Не сохранено");
+  });
+
+  it("does not prevent closing when there are no unsaved changes", async () => {
+    render(<App />);
+    await waitFor(() => expect(mockedWindow.onCloseRequested).toHaveBeenCalled());
+
+    const handler = mockedWindow.onCloseRequested.mock.calls[0][0] as unknown as (event: {
+      preventDefault: () => void;
+    }) => void;
+    const preventDefault = vi.fn();
+
+    handler({ preventDefault });
+
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(mockedWindow.destroy).not.toHaveBeenCalled();
+  });
+
+  it("prevents closing and destroys window on confirm when there are unsaved changes", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    openSample();
+    setupDescriptionLoading("");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    fireEvent.change(screen.getByTestId("description-codemirror"), {
+      target: { value: "Unsaved" },
+    });
+
+    const handler = mockedWindow.onCloseRequested.mock.calls[0][0] as unknown as (event: {
+      preventDefault: () => void;
+    }) => void;
+    const preventDefault = vi.fn();
+
+    handler({ preventDefault });
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(mockedWindow.destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it("prevents closing but does not destroy window when user cancels confirm", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    openSample();
+    setupDescriptionLoading("");
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Открыть папку/i }));
+    await waitFor(() => screen.getByTestId("tree-row-n_child1"));
+    fireEvent.click(screen.getByTestId("tree-row-button-n_child1"));
+    await waitFor(() => screen.getByTestId("description-codemirror"));
+
+    fireEvent.change(screen.getByTestId("description-codemirror"), {
+      target: { value: "Unsaved" },
+    });
+
+    const handler = mockedWindow.onCloseRequested.mock.calls[0][0] as unknown as (event: {
+      preventDefault: () => void;
+    }) => void;
+    const preventDefault = vi.fn();
+
+    handler({ preventDefault });
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(mockedWindow.destroy).not.toHaveBeenCalled();
   });
 });
