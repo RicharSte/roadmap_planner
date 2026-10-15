@@ -15,6 +15,7 @@ import {
   deleteDescriptions,
   openProject,
   readDescription,
+  reloadProject,
   saveProject,
   writeDescription,
 } from "../storage/projectStorage";
@@ -24,7 +25,7 @@ import type {
   StorageErrorCode,
 } from "../storage/projectStorage";
 
-/** Ошибка, которую показывает UI после неудачного открытия или сохранения. */
+/** Ошибка, которую показывает UI после неудачного открытия, перезагрузки или сохранения. */
 export interface ProjectError {
   code: StorageErrorCode | "DOMAIN";
   message: string;
@@ -37,8 +38,10 @@ export interface UseProjectResult {
   selectedId: string | null;
   collapsed: Set<string>;
   error: ProjectError | null;
+  reloadError: ProjectError | null;
   saveError: ProjectError | null;
   pendingCreate: boolean;
+  locked: boolean;
   parentIndex: ParentIndex;
   open: () => Promise<void>;
   create: () => Promise<void>;
@@ -46,6 +49,7 @@ export interface UseProjectResult {
   select: (id: string) => void;
   toggle: (id: string) => void;
   update: (compute: (project: Project) => Project) => Promise<boolean>;
+  reload: () => Promise<void>;
   createNode: (parentId: string | null, title: string) => Promise<void>;
   renameNode: (id: string, title: string) => Promise<void>;
   deleteNode: (id: string) => Promise<void>;
@@ -59,7 +63,7 @@ export interface UseProjectResult {
 /**
  * Хук управления открытым проектом.
  *
- * Хранит проект, выбранную ноду, свёрнутые ветки и ошибки открытия/сохранения.
+ * Хранит проект, выбранную ноду, свёрнутые ветки и ошибки открытия/перезагрузки/сохранения.
  * Все вызовы к диску идут через `projectStorage`; здесь только UI-состояние.
  */
 export function useProject(): UseProjectResult {
@@ -67,8 +71,10 @@ export function useProject(): UseProjectResult {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [error, setError] = useState<ProjectError | null>(null);
+  const [reloadError, setReloadError] = useState<ProjectError | null>(null);
   const [saveError, setSaveError] = useState<ProjectError | null>(null);
   const [pendingCreate, setPendingCreate] = useState(false);
+  const [locked, setLocked] = useState(false);
 
   /** Индекс родителей строится один раз при смене проекта. */
   const parentIndex = useMemo<ParentIndex>(() => {
@@ -86,8 +92,10 @@ export function useProject(): UseProjectResult {
       setSelectedId(null);
       setCollapsed(new Set());
       setError(null);
+      setReloadError(null);
       setSaveError(null);
       setPendingCreate(false);
+      setLocked(false);
       return;
     }
 
@@ -140,15 +148,72 @@ export function useProject(): UseProjectResult {
   }, []);
 
   /**
+   * Пересчитывает выбранную ноду и свёрнутые ветки после перезагрузки проекта.
+   * Выбор сохраняется только если нода осталась в новом дереве;
+   * свёрнутыми остаются только существующие id.
+   */
+  const applyReloadedProject = useCallback((next: Project): void => {
+    setProject(next);
+    setSaveError(null);
+    setReloadError(null);
+    setLocked(false);
+
+    setSelectedId((prev) => {
+      if (prev !== null && prev in next.nodes) {
+        return prev;
+      }
+      return null;
+    });
+
+    setCollapsed((prev) => {
+      const nextCollapsed = new Set<string>();
+      for (const id of prev) {
+        if (id in next.nodes) {
+          nextCollapsed.add(id);
+        }
+      }
+      return nextCollapsed;
+    });
+  }, []);
+
+  /**
+   * Перезагружает `roadmap.json` с диска.
+   * При успехе обновляет дерево, сохраняя выбор и чистя удалённые свёрнутые ветки.
+   * При ошибке блокирует любую запись на диск до следующей успешной перезагрузки.
+   */
+  const reload = useCallback(async (): Promise<void> => {
+    if (project === null) {
+      return;
+    }
+
+    const result = await reloadProject();
+
+    if (result.kind === "opened") {
+      applyReloadedProject(result.project);
+      return;
+    }
+
+    if (result.kind === "error") {
+      setReloadError({
+        code: result.code,
+        message: result.message,
+        problems: result.problems,
+      });
+      setLocked(true);
+    }
+  }, [project, applyReloadedProject]);
+
+  /**
    * Универсальное обновление проекта.
    *
    * Применяет чистую доменную функцию к текущему проекту, валидирует результат,
    * атомарно сохраняет на диск и только после успеха меняет состояние.
    * Любая ошибка домена или хранилища попадает в `saveError`.
+   * Если проект заблокирован после ошибки перезагрузки, запись не производится.
    */
   const update = useCallback(
     async (compute: (project: Project) => Project): Promise<boolean> => {
-      if (project === null) {
+      if (project === null || locked) {
         return false;
       }
 
@@ -189,7 +254,7 @@ export function useProject(): UseProjectResult {
       setSelectedId(nextSelectedId);
       return true;
     },
-    [project, selectedId],
+    [project, selectedId, locked],
   );
 
   /** Создаёт узел: в корень, если `parentId === null`, иначе — ребёнком. */
@@ -256,6 +321,10 @@ export function useProject(): UseProjectResult {
   /** Создаёт пустой файл описания и фиксирует путь в roadmap.json. */
   const createDescriptionCallback = useCallback(
     async (id: string): Promise<void> => {
+      if (locked) {
+        return;
+      }
+
       const path = `descriptions/${id}.md`;
       const result = await writeDescription(path, "");
       if (result.kind === "error") {
@@ -269,7 +338,7 @@ export function useProject(): UseProjectResult {
 
       await update((p) => setDescriptionPath(p, id, path));
     },
-    [update],
+    [update, locked],
   );
 
   /** Загружает содержимое файла описания. */
@@ -283,6 +352,10 @@ export function useProject(): UseProjectResult {
   /** Сохраняет содержимое файла описания. */
   const saveDescriptionCallback = useCallback(
     async (path: string, content: string): Promise<boolean> => {
+      if (locked) {
+        return false;
+      }
+
       const result = await writeDescription(path, content);
       if (result.kind === "error") {
         setSaveError({
@@ -296,7 +369,7 @@ export function useProject(): UseProjectResult {
       setSaveError(null);
       return true;
     },
-    [],
+    [locked],
   );
 
   return {
@@ -304,8 +377,10 @@ export function useProject(): UseProjectResult {
     selectedId,
     collapsed,
     error,
+    reloadError,
     saveError,
     pendingCreate,
+    locked,
     parentIndex,
     open,
     create,
@@ -313,6 +388,7 @@ export function useProject(): UseProjectResult {
     select,
     toggle,
     update,
+    reload,
     createNode: createNodeCallback,
     renameNode: renameNodeCallback,
     deleteNode: deleteNodeCallback,

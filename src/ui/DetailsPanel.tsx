@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { deleteNode as computeDeleteNode } from "../domain/tree";
 import type { NodeStatus, Project } from "../domain/types";
 import { DescriptionEditor } from "./DescriptionEditor";
+import type { DescriptionEditorHandle } from "./DescriptionEditor";
 import { STATUS_ORDER, STATUS_LABELS } from "./status";
 
 export interface DetailsPanelProps {
@@ -17,6 +18,8 @@ export interface DetailsPanelProps {
   onSaveDescription: (path: string, content: string) => Promise<boolean>;
   onDescriptionDirtyChange?: (dirty: boolean) => void;
   hasSaveError?: boolean;
+  descriptionRef?: React.RefObject<DescriptionEditorHandle | null>;
+  reloadToken?: number;
 }
 
 /**
@@ -37,6 +40,8 @@ export function DetailsPanel({
   onSaveDescription,
   onDescriptionDirtyChange,
   hasSaveError = false,
+  descriptionRef,
+  reloadToken = 0,
 }: DetailsPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -233,8 +238,10 @@ export function DetailsPanel({
           </button>
         ) : (
           <DescriptionEditor
+            ref={descriptionRef}
             key={node.id}
             path={node.descriptionPath}
+            reloadToken={reloadToken}
             onLoad={onLoadDescription}
             onSave={onSaveDescription}
             onDirtyChange={onDescriptionDirtyChange}
