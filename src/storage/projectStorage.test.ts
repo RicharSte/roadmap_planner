@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
 import {
   createProject,
+  deleteDescriptions,
   openProject,
+  readDescription,
   reloadProject,
   saveProject,
   writeDescription,
@@ -271,6 +273,77 @@ describe("createProject", () => {
       kind: "error",
       code: "INVALID_JSON",
       message: "content is not valid JSON",
+    });
+  });
+});
+
+describe("readDescription", () => {
+  it("returns loaded when Rust returns content", async () => {
+    mockInvoke.mockResolvedValueOnce("# hello");
+
+    const result = await readDescription("descriptions/n_a.md");
+
+    expect(result).toEqual({ kind: "loaded", content: "# hello" });
+    expect(mockInvoke).toHaveBeenCalledWith("read_description", {
+      path: "descriptions/n_a.md",
+    });
+  });
+
+  it("returns missing when Rust returns null", async () => {
+    mockInvoke.mockResolvedValueOnce(null);
+
+    const result = await readDescription("descriptions/n_a.md");
+
+    expect(result).toEqual({ kind: "missing" });
+  });
+
+  it("passes through a Rust error code", async () => {
+    mockInvoke.mockRejectedValueOnce({
+      code: "NOT_UTF8",
+      message: "description is not valid UTF-8",
+    });
+
+    const result = await readDescription("descriptions/n_a.md");
+
+    expect(result).toEqual({
+      kind: "error",
+      code: "NOT_UTF8",
+      message: "description is not valid UTF-8",
+    });
+  });
+});
+
+describe("deleteDescriptions", () => {
+  it("returns saved and invokes delete_descriptions with paths", async () => {
+    mockInvoke.mockResolvedValueOnce(undefined);
+
+    const result = await deleteDescriptions(["descriptions/n_a.md", "descriptions/n_b.md"]);
+
+    expect(result).toEqual({ kind: "saved" });
+    expect(mockInvoke).toHaveBeenCalledWith("delete_descriptions", {
+      paths: ["descriptions/n_a.md", "descriptions/n_b.md"],
+    });
+  });
+
+  it("does not invoke for an empty list", async () => {
+    const result = await deleteDescriptions([]);
+
+    expect(result).toEqual({ kind: "saved" });
+    expect(mockInvoke).not.toHaveBeenCalled();
+  });
+
+  it("passes through a Rust error code", async () => {
+    mockInvoke.mockRejectedValueOnce({
+      code: "INVALID_PATH",
+      message: "description path must be descriptions/<name>.md",
+    });
+
+    const result = await deleteDescriptions(["descriptions/n_a.md", "roadmap.json"]);
+
+    expect(result).toEqual({
+      kind: "error",
+      code: "INVALID_PATH",
+      message: "description path must be descriptions/<name>.md",
     });
   });
 });

@@ -26,6 +26,9 @@ function App() {
     deleteNode,
     moveNode,
     setNodeStatus,
+    createDescription,
+    loadDescription,
+    saveDescription,
   } = useProject();
   const [sidebarWidth, setSidebarWidth] = useState(INITIAL_SIDEBAR_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
@@ -139,6 +142,9 @@ function App() {
           onRename={renameNode}
           onDelete={deleteNode}
           onSetStatus={setNodeStatus}
+          onCreateDescription={createDescription}
+          onLoadDescription={loadDescription}
+          onSaveDescription={saveDescription}
         />
       </div>
     </div>

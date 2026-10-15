@@ -1,5 +1,5 @@
 use crate::atomic::{remove_stale_temps, write_inside};
-use crate::paths::AppError;
+use crate::paths::{AppError, resolve_inside};
 use std::fs;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
@@ -9,6 +9,9 @@ use tauri_plugin_dialog::DialogExt;
 
 /// Максимальный размер `roadmap.json` в байтах (10 МБ).
 const MAX_ROADMAP_SIZE: u64 = 10 * 1024 * 1024;
+
+/// Максимальный размер файла описания в байтах (10 МБ).
+const MAX_DESCRIPTION_SIZE: u64 = 10 * 1024 * 1024;
 
 /// Вид выбранной папки: с проектом или пустая.
 #[derive(Debug, Clone)]
@@ -210,6 +213,93 @@ impl ProjectState {
 
         write_inside(root, path, content.as_bytes())?;
         remove_stale_temps(root);
+        Ok(())
+    }
+
+    /// Читает файл описания из открытого проекта.
+    ///
+    /// # Ошибки
+    /// - `NO_PROJECT_OPEN` — проект ещё не подтверждён.
+    /// - `INVALID_PATH` — путь не соответствует шаблону `descriptions/<name>.md`.
+    /// - `PATH_OUTSIDE_PROJECT` — путь разрешается за пределы проекта (например, symlink наружу).
+    /// - `IO_ERROR` — путь является папкой или другая ошибка ввода-вывода.
+    /// - `FILE_TOO_LARGE` — размер файла превышает 10 МБ.
+    /// - `NOT_UTF8` — файл не является валидным UTF-8.
+    ///
+    /// Отсутствующий файл возвращает `Ok(None)`, а не ошибку: UI покажет пустой редактор,
+    /// а запись создаст файл при сохранении.
+    pub fn read_description(&self, path: &str) -> Result<Option<String>, AppError> {
+        let root = self
+            .root
+            .as_deref()
+            .ok_or_else(|| AppError::new("NO_PROJECT_OPEN", "no project is currently open"))?;
+
+        Self::validate_description_path(path)?;
+
+        let full_path = resolve_inside(root, path)?;
+
+        if !full_path.exists() {
+            return Ok(None);
+        }
+
+        if full_path.is_dir() {
+            return Err(AppError::io("description path is a directory"));
+        }
+
+        let metadata = fs::metadata(&full_path)
+            .map_err(|e| AppError::io(format!("cannot read description metadata: {e}")))?;
+        if metadata.len() > MAX_DESCRIPTION_SIZE {
+            return Err(AppError::new(
+                "FILE_TOO_LARGE",
+                format!(
+                    "description exceeds the {} byte limit",
+                    MAX_DESCRIPTION_SIZE
+                ),
+            ));
+        }
+
+        fs::read_to_string(&full_path).map(Some).map_err(|e| {
+            if e.kind() == ErrorKind::InvalidData {
+                AppError::new("NOT_UTF8", "description is not valid UTF-8")
+            } else {
+                AppError::io(format!("cannot read description: {e}"))
+            }
+        })
+    }
+
+    /// Удаляет файлы описаний в открытом проекте.
+    ///
+    /// Сначала проверяются все пути; если хоть один невалиден или выходит за пределы проекта,
+    /// ни один файл не удаляется. После проверки каждый файл удаляется; отсутствующий файл
+    /// пропускается без ошибки. Папка или неожиданная ошибка ввода-вывода возвращают `IO_ERROR`.
+    pub fn delete_descriptions(&self, paths: &[String]) -> Result<(), AppError> {
+        let root = self
+            .root
+            .as_deref()
+            .ok_or_else(|| AppError::new("NO_PROJECT_OPEN", "no project is currently open"))?;
+
+        if paths.is_empty() {
+            return Ok(());
+        }
+
+        // Проверяем все пути до первого удаления, чтобы не оставить операцию наполовину.
+        for path in paths {
+            Self::validate_description_path(path)?;
+            resolve_inside(root, path)?;
+        }
+
+        for path in paths {
+            let full_path = resolve_inside(root, path)?;
+            if let Err(e) = fs::remove_file(&full_path) {
+                if e.kind() == ErrorKind::NotFound {
+                    continue;
+                }
+                return Err(AppError::io(format!(
+                    "cannot delete description {path}: {e}"
+                )));
+            }
+        }
+
         Ok(())
     }
 
@@ -433,6 +523,38 @@ pub fn write_description(
     content: String,
 ) -> Result<(), AppError> {
     state.lock().unwrap().write_description(&path, &content)
+}
+
+/// Читает файл описания из открытого проекта.
+///
+/// # Ошибки
+/// - `NO_PROJECT_OPEN` — проект ещё не подтверждён.
+/// - `INVALID_PATH` — путь не соответствует шаблону `descriptions/<name>.md`.
+/// - `PATH_OUTSIDE_PROJECT` — путь разрешается за пределы проекта.
+/// - `IO_ERROR` — путь является папкой или другая ошибка ввода-вывода.
+/// - `FILE_TOO_LARGE` — файл больше 10 МБ.
+/// - `NOT_UTF8` — файл не валидный UTF-8.
+#[tauri::command]
+pub fn read_description(
+    state: State<'_, Mutex<ProjectState>>,
+    path: String,
+) -> Result<Option<String>, AppError> {
+    state.lock().unwrap().read_description(&path)
+}
+
+/// Удаляет файлы описаний в открытом проекте.
+///
+/// # Ошибки
+/// - `NO_PROJECT_OPEN` — проект ещё не подтверждён.
+/// - `INVALID_PATH` — хотя бы один путь не соответствует шаблону.
+/// - `PATH_OUTSIDE_PROJECT` — хотя бы один путь выходит за пределы проекта.
+/// - `IO_ERROR` — папка или неожиданная ошибка при удалении.
+#[tauri::command]
+pub fn delete_descriptions(
+    state: State<'_, Mutex<ProjectState>>,
+    paths: Vec<String>,
+) -> Result<(), AppError> {
+    state.lock().unwrap().delete_descriptions(&paths)
 }
 
 #[cfg(test)]
@@ -760,5 +882,235 @@ mod tests {
             content
         );
         assert!(dir.join("descriptions").is_dir());
+    }
+
+    /// `read_description` без открытого проекта возвращает `NO_PROJECT_OPEN`.
+    #[test]
+    fn read_description_without_root_fails() {
+        let state = ProjectState::new();
+        let err = state.read_description("descriptions/n_a.md").unwrap_err();
+        assert_eq!(err.code, "NO_PROJECT_OPEN");
+    }
+
+    /// `read_description` отклоняет пути, не соответствующие `descriptions/<name>.md`.
+    #[test]
+    fn read_description_rejects_invalid_paths() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let invalid = vec![
+            "roadmap.json",
+            "descriptions/a.txt",
+            "descriptions/sub/a.md",
+            "descriptions/../a.md",
+            "descriptions/a b.md",
+            "descriptions/.md",
+        ];
+
+        for path in invalid {
+            let err = state.read_description(path).unwrap_err();
+            assert_eq!(err.code, "INVALID_PATH", "path: {}", path);
+        }
+    }
+
+    /// `read_description` возвращает `None`, если файла нет.
+    #[test]
+    fn read_description_missing_returns_none() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let result = state.read_description("descriptions/n_a.md").unwrap();
+        assert_eq!(result, None);
+    }
+
+    /// `read_description` возвращает содержимое существующего файла.
+    #[test]
+    fn read_description_reads_existing_file() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        fs::write(dir.join("descriptions/n_a.md"), "# hello").unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let result = state.read_description("descriptions/n_a.md").unwrap();
+        assert_eq!(result, Some("# hello".to_string()));
+    }
+
+    /// `read_description` возвращает пустую строку для пустого файла.
+    #[test]
+    fn read_description_reads_empty_file() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        fs::write(dir.join("descriptions/n_a.md"), "").unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let result = state.read_description("descriptions/n_a.md").unwrap();
+        assert_eq!(result, Some("".to_string()));
+    }
+
+    /// `read_description` отклоняет файлы больше 10 МБ.
+    #[test]
+    fn read_description_rejects_oversized_file() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        let big = vec![b'x'; (MAX_DESCRIPTION_SIZE + 1) as usize];
+        fs::write(dir.join("descriptions/n_a.md"), big).unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let err = state.read_description("descriptions/n_a.md").unwrap_err();
+        assert_eq!(err.code, "FILE_TOO_LARGE");
+    }
+
+    /// `read_description` отклоняет файл, не являющийся валидным UTF-8.
+    #[test]
+    fn read_description_rejects_non_utf8() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        fs::write(
+            dir.join("descriptions/n_a.md"),
+            [0x80u8, 0x81, 0x82].as_slice(),
+        )
+        .unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let err = state.read_description("descriptions/n_a.md").unwrap_err();
+        assert_eq!(err.code, "NOT_UTF8");
+    }
+
+    /// `read_description` отклоняет папку по пути описания.
+    #[test]
+    fn read_description_rejects_directory() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir_all(dir.join("descriptions/n_a.md")).unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let err = state.read_description("descriptions/n_a.md").unwrap_err();
+        assert_eq!(err.code, "IO_ERROR");
+    }
+
+    /// `read_description` отклоняет symlink, указывающий за пределы проекта (Unix).
+    #[test]
+    #[cfg(unix)]
+    fn read_description_rejects_symlink_outside() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        let outside = tempfile::tempdir().unwrap().keep();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        std::os::unix::fs::symlink(outside, dir.join("descriptions")).unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let err = state.read_description("descriptions/n_a.md").unwrap_err();
+        assert_eq!(err.code, "PATH_OUTSIDE_PROJECT");
+    }
+
+    /// `delete_descriptions` без открытого проекта возвращает ошибку.
+    #[test]
+    fn delete_descriptions_without_root_fails() {
+        let state = ProjectState::new();
+        let err = state
+            .delete_descriptions(&["descriptions/n_a.md".to_string()])
+            .unwrap_err();
+        assert_eq!(err.code, "NO_PROJECT_OPEN");
+    }
+
+    /// `delete_descriptions` удаляет существующие файлы.
+    #[test]
+    fn delete_descriptions_removes_files() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        fs::write(dir.join("descriptions/n_a.md"), "a").unwrap();
+        fs::write(dir.join("descriptions/n_b.md"), "b").unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        state
+            .delete_descriptions(&[
+                "descriptions/n_a.md".to_string(),
+                "descriptions/n_b.md".to_string(),
+            ])
+            .unwrap();
+
+        assert!(!dir.join("descriptions/n_a.md").exists());
+        assert!(!dir.join("descriptions/n_b.md").exists());
+    }
+
+    /// `delete_descriptions` пропускает отсутствующие файлы.
+    #[test]
+    fn delete_descriptions_skips_missing_files() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        fs::write(dir.join("descriptions/n_a.md"), "a").unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        state
+            .delete_descriptions(&[
+                "descriptions/n_a.md".to_string(),
+                "descriptions/n_b.md".to_string(),
+            ])
+            .unwrap();
+
+        assert!(!dir.join("descriptions/n_a.md").exists());
+    }
+
+    /// `delete_descriptions` не удаляет ничего, если хотя бы один путь невалиден.
+    #[test]
+    fn delete_descriptions_validates_all_paths_first() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::create_dir(dir.join("descriptions")).unwrap();
+        fs::write(dir.join("descriptions/n_a.md"), "a").unwrap();
+        fs::write(dir.join("descriptions/n_b.md"), "b").unwrap();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        let err = state
+            .delete_descriptions(&[
+                "descriptions/n_a.md".to_string(),
+                "descriptions/n_b.txt".to_string(),
+            ])
+            .unwrap_err();
+        assert_eq!(err.code, "INVALID_PATH");
+
+        assert!(dir.join("descriptions/n_a.md").exists());
+        assert!(dir.join("descriptions/n_b.md").exists());
+    }
+
+    /// `delete_descriptions` с пустым списком ничего не делает.
+    #[test]
+    fn delete_descriptions_empty_list_ok() {
+        let mut state = ProjectState::new();
+        let dir = temp_dir();
+        fs::write(dir.join("roadmap.json"), "{}").unwrap();
+        state.set_pending(dir.clone(), PendingView::Roadmap);
+        state.commit().unwrap();
+
+        state.delete_descriptions(&[]).unwrap();
     }
 }

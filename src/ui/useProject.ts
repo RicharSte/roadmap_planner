@@ -5,12 +5,24 @@ import {
   deleteNode,
   moveNode,
   renameNode,
+  setDescriptionPath,
   setStatus,
 } from "../domain/tree";
 import type { NodeStatus, ParentIndex, Project } from "../domain/types";
 import { DomainError } from "../domain/types";
-import { createProject, openProject, saveProject } from "../storage/projectStorage";
-import type { OpenResult, StorageErrorCode } from "../storage/projectStorage";
+import {
+  createProject,
+  deleteDescriptions,
+  openProject,
+  readDescription,
+  saveProject,
+  writeDescription,
+} from "../storage/projectStorage";
+import type {
+  OpenResult,
+  ReadDescriptionResult,
+  StorageErrorCode,
+} from "../storage/projectStorage";
 
 /** Ошибка, которую показывает UI после неудачного открытия или сохранения. */
 export interface ProjectError {
@@ -33,12 +45,15 @@ export interface UseProjectResult {
   cancelCreate: () => void;
   select: (id: string) => void;
   toggle: (id: string) => void;
-  update: (compute: (project: Project) => Project) => Promise<void>;
+  update: (compute: (project: Project) => Project) => Promise<boolean>;
   createNode: (parentId: string | null, title: string) => Promise<void>;
   renameNode: (id: string, title: string) => Promise<void>;
   deleteNode: (id: string) => Promise<void>;
   moveNode: (id: string, newParentId: string | null, index?: number) => Promise<void>;
   setNodeStatus: (id: string, status: NodeStatus) => Promise<void>;
+  createDescription: (id: string) => Promise<void>;
+  loadDescription: (path: string) => Promise<ReadDescriptionResult>;
+  saveDescription: (path: string, content: string) => Promise<boolean>;
 }
 
 /**
@@ -132,9 +147,9 @@ export function useProject(): UseProjectResult {
    * Любая ошибка домена или хранилища попадает в `saveError`.
    */
   const update = useCallback(
-    async (compute: (project: Project) => Project): Promise<void> => {
+    async (compute: (project: Project) => Project): Promise<boolean> => {
       if (project === null) {
-        return;
+        return false;
       }
 
       let next: Project;
@@ -146,7 +161,7 @@ export function useProject(): UseProjectResult {
         } else {
           throw error;
         }
-        return;
+        return false;
       }
 
       const result = await saveProject(next);
@@ -156,7 +171,7 @@ export function useProject(): UseProjectResult {
           message: result.message,
           problems: result.problems,
         });
-        return;
+        return false;
       }
 
       const oldIds = project.nodes;
@@ -172,6 +187,7 @@ export function useProject(): UseProjectResult {
       setProject(next);
       setSaveError(null);
       setSelectedId(nextSelectedId);
+      return true;
     },
     [project, selectedId],
   );
@@ -192,12 +208,33 @@ export function useProject(): UseProjectResult {
     [update],
   );
 
-  /** Удаляет узел вместе с поддеревом. */
+  /** Удаляет узел вместе с поддеревом и чистит файлы описаний. */
   const deleteNodeCallback = useCallback(
     async (id: string): Promise<void> => {
-      await update((p) => deleteNode(p, id).project);
+      if (project === null) {
+        return;
+      }
+
+      const deletion = deleteNode(project, id);
+      const paths = deletion.deletedIds
+        .map((deletedId) => project.nodes[deletedId]?.descriptionPath)
+        .filter((path): path is string => path !== null && path !== undefined);
+
+      const saved = await update(() => deletion.project);
+      if (!saved) {
+        return;
+      }
+
+      const result = await deleteDescriptions(paths);
+      if (result.kind === "error") {
+        setSaveError({
+          code: result.code,
+          message: result.message,
+          problems: result.problems,
+        });
+      }
     },
-    [update],
+    [project, update],
   );
 
   /** Перемещает узел к другому родителю или переставляет внутри текущего. */
@@ -214,6 +251,52 @@ export function useProject(): UseProjectResult {
       await update((p) => setStatus(p, id, status));
     },
     [update],
+  );
+
+  /** Создаёт пустой файл описания и фиксирует путь в roadmap.json. */
+  const createDescriptionCallback = useCallback(
+    async (id: string): Promise<void> => {
+      const path = `descriptions/${id}.md`;
+      const result = await writeDescription(path, "");
+      if (result.kind === "error") {
+        setSaveError({
+          code: result.code,
+          message: result.message,
+          problems: result.problems,
+        });
+        return;
+      }
+
+      await update((p) => setDescriptionPath(p, id, path));
+    },
+    [update],
+  );
+
+  /** Загружает содержимое файла описания. */
+  const loadDescriptionCallback = useCallback(
+    async (path: string): Promise<ReadDescriptionResult> => {
+      return readDescription(path);
+    },
+    [],
+  );
+
+  /** Сохраняет содержимое файла описания. */
+  const saveDescriptionCallback = useCallback(
+    async (path: string, content: string): Promise<boolean> => {
+      const result = await writeDescription(path, content);
+      if (result.kind === "error") {
+        setSaveError({
+          code: result.code,
+          message: result.message,
+          problems: result.problems,
+        });
+        return false;
+      }
+
+      setSaveError(null);
+      return true;
+    },
+    [],
   );
 
   return {
@@ -235,5 +318,8 @@ export function useProject(): UseProjectResult {
     deleteNode: deleteNodeCallback,
     moveNode: moveNodeCallback,
     setNodeStatus: setNodeStatusCallback,
+    createDescription: createDescriptionCallback,
+    loadDescription: loadDescriptionCallback,
+    saveDescription: saveDescriptionCallback,
   };
 }

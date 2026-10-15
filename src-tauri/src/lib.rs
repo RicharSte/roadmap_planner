@@ -3,8 +3,8 @@ mod paths;
 mod project;
 
 use project::{
-    ProjectState, commit_project, create_project, open_project, reload_project, save_roadmap,
-    write_description,
+    ProjectState, commit_project, create_project, delete_descriptions, open_project,
+    read_description, reload_project, save_roadmap, write_description,
 };
 use std::sync::Mutex;
 
@@ -39,7 +39,9 @@ pub fn run() {
             create_project,
             reload_project,
             save_roadmap,
-            write_description
+            write_description,
+            read_description,
+            delete_descriptions
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

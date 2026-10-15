@@ -412,3 +412,127 @@ button {
 .details-description {
   color: var(--text);
 }
+
+.description-loading {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.description-error {
+  padding: 10px 12px;
+  background-color: rgba(244, 67, 54, 0.15);
+  border: 1px solid var(--error);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.description-error strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.description-error-code {
+  color: var(--text-muted);
+}
+
+.description-mode-switch {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.description-mode-switch button {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--surface-hover);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.description-mode-switch button:hover:not(:disabled) {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.description-mode-switch button:disabled {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  cursor: default;
+}
+
+.description-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.description-missing {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.description-codemirror {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.description-codemirror .cm-editor {
+  background-color: var(--bg);
+}
+
+.description-codemirror .cm-content {
+  color: var(--text);
+}
+
+.description-preview {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--surface);
+  min-height: 120px;
+}
+
+.description-preview p,
+.description-preview ul,
+.description-preview ol {
+  margin: 0 0 8px;
+}
+
+.description-preview table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.description-preview th,
+.description-preview td {
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.description-empty-preview {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.delete-confirmation {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--error);
+  border-radius: 4px;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.delete-confirmation p {
+  margin: 0 0 12px;
+}
+
+.delete-confirmation-actions {
+  display: flex;
+  gap: 8px;
+}

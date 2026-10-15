@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { deleteNode as computeDeleteNode } from "../domain/tree";
 import type { NodeStatus, Project } from "../domain/types";
+import { DescriptionEditor } from "./DescriptionEditor";
 import { STATUS_ORDER, STATUS_LABELS } from "./status";
 
 export interface DetailsPanelProps {
@@ -8,13 +10,19 @@ export interface DetailsPanelProps {
   onRename: (id: string, title: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onSetStatus: (id: string, status: NodeStatus) => Promise<void>;
+  onCreateDescription: (id: string) => Promise<void>;
+  onLoadDescription: (
+    path: string,
+  ) => Promise<import("../storage/projectStorage").ReadDescriptionResult>;
+  onSaveDescription: (path: string, content: string) => Promise<boolean>;
 }
 
 /**
  * Панель деталей выбранной ноды.
  *
  * Показывает заголовок (с возможностью переименования), статус, даты создания/изменения,
- * путь к описанию и кнопку удаления. Если нода не выбрана или в проекте нет нод — заглушку.
+ * редактор описания (или кнопку создания) и кнопку удаления с подтверждением.
+ * Если нода не выбрана или в проекте нет нод — заглушку.
  */
 export function DetailsPanel({
   project,
@@ -22,9 +30,13 @@ export function DetailsPanel({
   onRename,
   onDelete,
   onSetStatus,
+  onCreateDescription,
+  onLoadDescription,
+  onSaveDescription,
 }: DetailsPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -96,13 +108,29 @@ export function DetailsPanel({
     }
   };
 
-  const handleDelete = async (): Promise<void> => {
-    await onDelete(node.id);
-  };
-
   const handleStatusChange = async (event: React.ChangeEvent<HTMLSelectElement>): Promise<void> => {
     await onSetStatus(node.id, event.target.value as NodeStatus);
   };
+
+  const startDelete = (): void => {
+    setConfirmingId(node.id);
+  };
+
+  const cancelDelete = (): void => {
+    setConfirmingId(null);
+  };
+
+  const confirmDelete = async (): Promise<void> => {
+    setConfirmingId(null);
+    await onDelete(node.id);
+  };
+
+  const deletionInfo = computeDeleteNode(project, node.id);
+  const deletedCount = deletionInfo.deletedIds.length;
+  const childCount = deletionInfo.deletedIds.filter((id) => id !== node.id).length;
+  const descriptionCount = deletionInfo.deletedIds.filter(
+    (id) => project.nodes[id]?.descriptionPath !== null,
+  ).length;
 
   return (
     <section className="details-panel">
@@ -133,7 +161,7 @@ export function DetailsPanel({
           <button
             type="button"
             className="toolbar-button details-delete"
-            onClick={() => void handleDelete()}
+            onClick={() => void startDelete()}
             data-testid="details-delete-button"
           >
             Удалить
@@ -161,9 +189,53 @@ export function DetailsPanel({
         <p>Создано: {new Date(node.createdAt).toLocaleString()}</p>
         <p>Изменено: {new Date(node.updatedAt).toLocaleString()}</p>
       </div>
-      <p className="details-description">
-        Описание: {node.descriptionPath === null ? "нет" : node.descriptionPath}
-      </p>
+
+      {confirmingId === node.id && (
+        <div className="delete-confirmation" role="alert" data-testid="delete-confirmation">
+          <p>
+            Удалить «{node.title}»? Будет удалено нод: {deletedCount} (из них дочерних: {childCount}
+            ), файлов описаний: {descriptionCount}.
+          </p>
+          <div className="delete-confirmation-actions">
+            <button
+              type="button"
+              className="toolbar-button details-delete"
+              onClick={() => void confirmDelete()}
+              data-testid="delete-confirm-button"
+            >
+              Удалить
+            </button>
+            <button
+              type="button"
+              className="toolbar-button"
+              onClick={cancelDelete}
+              data-testid="delete-cancel-button"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="details-description">
+        {node.descriptionPath === null ? (
+          <button
+            type="button"
+            className="toolbar-button"
+            onClick={() => void onCreateDescription(node.id)}
+            data-testid="create-description-button"
+          >
+            Создать описание
+          </button>
+        ) : (
+          <DescriptionEditor
+            key={node.id}
+            path={node.descriptionPath}
+            onLoad={onLoadDescription}
+            onSave={onSaveDescription}
+          />
+        )}
+      </div>
     </section>
   );
 }
