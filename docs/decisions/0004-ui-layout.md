@@ -1,6 +1,6 @@
 # 0004. Main UI: tree sidebar + details panel
 
-Status: accepted
+Status: accepted (partially superseded by 0020: editable canvas with React Flow)
 Date: 2026-10-13
 
 ## Context
@@ -15,6 +15,5 @@ Right: details panel of the selected node — title, status, markdown editor (AD
 ## Consequences
 
 - No graph layout library in MVP.
-- A graph canvas (e.g. React Flow + auto layout) may be added later as a second read-only/view mode;
-  it must reuse `src/domain/`, not its own data model.
-- Keyboard navigation in the tree is desirable.
+- Stage 3: editable graph canvas as a second view (ADR 0020); it reuses `src/domain/`, not its own data model.
+- Keyboard navigation in the tree: T-313.

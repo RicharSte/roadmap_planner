@@ -1,6 +1,6 @@
 # 0002. Roadmap project = user-owned folder (JSON + Markdown)
 
-Status: accepted
+Status: accepted (partially superseded by 0018: external changes are watched)
 Date: 2026-10-13
 
 ## Context
@@ -11,7 +11,7 @@ Local-first, transparent, portable data. Single user.
 
 A project is a folder chosen by the user. It contains one roadmap JSON file
 (source of truth for structure) and Markdown description files created by the app.
-Autosave. External changes are picked up only via explicit "Reload".
+Autosave. External changes: explicit "Reload" (MVP); since stage 2 also folder watching (ADR 0018).
 
 ## Consequences
 

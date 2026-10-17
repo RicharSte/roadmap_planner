@@ -10,6 +10,6 @@ Read by both Claude Code (`.claude/skills/`) and OpenCode (Claude-compatible pat
 Local notes:
 - `tdd`: test seams come from `docs/plans/<id>.md`; it mentions `codebase-design` / `code-review`
   skills that are not installed here — use `/review-diff` instead.
-- `tauri-v2`: covers mobile, updater, HTTP examples — not in MVP scope; AGENTS.md rules win
-  (offline, least-privilege capabilities).
+- `tauri-v2`: covers mobile, updater, HTTP examples — mobile and updater are not in MSP scope; HTTP only as in
+  ADR 0021 (Rust side, one host, user action); sidecar per ADR 0017. AGENTS.md rules win (least-privilege capabilities).
 - Update: re-copy from source and bump the commit in this table.

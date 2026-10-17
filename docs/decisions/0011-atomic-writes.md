@@ -1,12 +1,12 @@
 # 0011. Atomic writes: one entry point, temp next to target, single writer
 
-Status: accepted
+Status: accepted (rules 2, 5, 9, 10 superseded by 0018)
 Date: 2026-10-14
 
 ## Context
 
-ADR 0002 requires atomic writes (temp + rename) but not how. T-006 implements them; T-007, T-010, T-011, T-103, T-204
-reuse them. Without fixed rules a later task can add a plain `fs::write`, a temp in `/tmp`, or a multi-file write that
+ADR 0002 requires atomic writes (temp + rename) but not how. T-006 implements them; T-007, T-010, T-011 and later
+write tasks reuse them. Without fixed rules a later task can add a plain `fs::write`, a temp in `/tmp`, or a multi-file write that
 leaves a dangling `descriptionPath`.
 
 ## Decision
@@ -30,5 +30,6 @@ leaves a dangling `descriptionPath`.
 ## Consequences
 
 - Lost on rename (accepted): hard links, xattr / Finder tags, ACL, owner.
-- Windows: a target held open by another program fails with `IO_ERROR`; the next autosave retries.
+- Windows: a target held open by another program fails with `IO_ERROR`; the next autosave retries
+  (bounded retry inside the write: T-106).
 - Changing any rule above needs a new ADR.

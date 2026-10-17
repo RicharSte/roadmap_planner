@@ -1,11 +1,11 @@
 # 0001. Desktop stack: Tauri 2 + TypeScript + Rust
 
-Status: accepted
+Status: accepted (amended by 0021: catalog is the only network feature; 0017: MCP sidecar)
 Date: 2026-10-13
 
 ## Context
 
-Cross-platform desktop app (macOS, Windows), offline, possible web version later.
+Cross-platform desktop app (macOS, Windows), offline core workflow, possible web version later.
 Developer knows Python, reads Go. Development is agent-driven.
 
 ## Decision

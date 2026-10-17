@@ -1,6 +1,6 @@
 # 0005. Project format v1: childrenIds-only links, descriptions/<id>.md
 
-Status: accepted
+Status: accepted (v1; statuses and "v2 = multiple parents" superseded by 0010)
 Date: 2026-10-13
 
 ## Context

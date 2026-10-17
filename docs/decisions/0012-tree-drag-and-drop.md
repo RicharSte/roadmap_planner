@@ -17,11 +17,11 @@ sibling reorder; without a fixed model each task could reinvent zones, cycle han
   own parent; middle third → make dragged node the last child of the row.
 - Invalid targets (the dragged node itself, its descendants) get `not-allowed` cursor; drop is a no-op.
   `DomainError CYCLE` from `moveNode` is a backstop, not the primary guard.
-- No keyboard equivalent in MVP (mouse/trackpad only); a keyboard fallback is tracked in `later.md`.
+- No keyboard equivalent in MVP (mouse/trackpad only); keyboard fallback: T-313.
 
 ## Consequences
 
-- Any future tree view (e.g. v2 graph) reusing this interaction must keep the 3-zone semantics or
+- The canvas (ADR 0020) does not use this model. Any future tree view reusing this interaction must keep the 3-zone semantics or
   update this ADR.
 - Touch/tablet support would need a different implementation (native HTML5 DnD is unreliable on touch).
-- Keyboard-only move/reorder stays a known gap until `later.md` promotes it to a task.
+- Keyboard-only move/reorder stays a known gap until T-313.

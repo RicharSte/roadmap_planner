@@ -1,6 +1,6 @@
 # 0009. File access: Rust owns the project root, relative paths only, two-phase open
 
-Status: accepted
+Status: accepted (amended by 0017: MCP server applies the same rules; 0022: save-dialog exports)
 Date: 2026-10-14
 
 ## Context
@@ -25,6 +25,6 @@ without one model each task could take absolute paths from JS or bypass validati
 ## Consequences
 
 - One mechanism for all file tasks; untrusted paths from JS never reach the filesystem.
-- Recent projects / reopen last project (after MVP, `docs/later.md`): Rust stores the path list itself; the frontend
+- Recent projects / reopen last project (T-309): Rust stores the path list itself; the frontend
   sends an index/id, never a path; reopening goes through the same `read → parseProject → commit` flow.
 - Changing any rule above needs a new ADR.

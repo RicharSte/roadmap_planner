@@ -63,7 +63,7 @@
     "repowise": {
       "type": "local",
       "command": ["repowise", "mcp", "/Users/ns/prodjects/roadmap_proj", "--transport", "stdio"],
-      "enabled": true
+      "enabled": false
     }
   }
 }

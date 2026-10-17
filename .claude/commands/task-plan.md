@@ -6,15 +6,19 @@ Plan task $ARGUMENTS. Do not edit source code in this command.
 
 0. Load skill `caveman` (full) for chat replies. Plan file itself: normal full Russian.
 1. If $ARGUMENTS is empty, take the first `todo` task in `docs/backlog.md`. Never invent tasks.
-   Read `docs/handoff.md`, the task row, `docs/mvp-done.md`, relevant ADRs in `docs/decisions/`,
-   and only the code files the task touches (find them and their callers with CodeGraph).
+   Read `docs/handoff.md`, the task row, `docs/msp-done.md`, relevant ADRs in `docs/decisions/`,
+   and only the code files the task touches (find them and their callers with CodeGraph;
+   index rules: `docs/agents/code-intelligence.md`).
+   Task marked **UI:** → read `docs/ui/$ARGUMENTS.md` (template `docs/ui/_template.md`). Missing → ask the user to
+   fill it (or fill it together in the interview) before writing the plan. Large UI tasks (design, canvas):
+   propose 2–3 static HTML mockups in `docs/ui/$ARGUMENTS-mockup-<n>.html` and let the user pick one first.
 
 2. Interview (skill `grilling`, with these overrides):
-   - Needed when the Plan column is **C**, or a decision is not covered by the brief / ADRs / template.
+   - Needed when the Plan column is **O**, or a decision is not covered by the brief / ADRs / template.
      Otherwise say «интервью не нужно: <причина>» and go to step 3.
    - Interview until no decision is open and nothing is silently assumed. No limit on rounds or questions.
      Each question: options + your recommended answer.
-   - Only this task and its acceptance criteria. Beyond-MVP ideas → `docs/later.md`, not questions.
+   - Only this task and its acceptance criteria. Ideas beyond the current stage → `docs/later.md`, not questions.
    - No subagents: find facts yourself (CodeGraph, Repowise, grep/read).
    - Never re-ask what `docs/product-brief.md`, `docs/decisions/`, `docs/open-questions.md` answer.
 

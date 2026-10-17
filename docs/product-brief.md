@@ -1,117 +1,104 @@
-# Product Brief — roadmap_proj (MVP)
+# Product Brief — roadmap_proj
 
 ## Product
 
-A local-first desktop application for macOS and Windows for creating and editing roadmap projects.
+A local-first desktop application for macOS and Windows for creating, editing and executing roadmap projects —
+by a person and by AI agents.
 
 A roadmap project is a user-owned folder on disk containing:
 
 - a main JSON file that stores the roadmap structure;
-- Markdown (`.md`) files used as node descriptions.
+- Markdown (`.md`) files used as node descriptions (and, since stage 2, task plans, reports and a handoff note).
 
 The app is a visual editor and viewer for that JSON + Markdown project structure.
 
+## Releases
+
+| Release         | Status  | Finish line                 |
+| --------------- | ------- | --------------------------- |
+| MVP (0.1)       | done    | `docs/archive/mvp-done.md`  |
+| MSP 1.0.0       | current | `docs/msp-done.md`          |
+| Web (after MSP) | context | not planned yet (see «Web») |
+
+MSP = Minimum Selling Product: the first public release. Stages: 1 tech debt (0.2), 2 MCP and agents (0.3),
+3 UX/UI, QoL and release (0.4 → 1.0.0). Tasks: `docs/backlog.md`.
+
 ## Target user
 
-Personal use by a single user. No teams, no collaboration.
+A single user on their own computer, working alone or together with AI agents (Claude Code, OpenCode).
+No teams, no accounts, no collaboration between people.
 
-## MVP goals
+## MVP baseline (done)
 
-The first version allows the user to:
+- create a new project; open an existing one by selecting its folder; one project at a time;
+- create, edit, delete nodes; parent/child relationships (tree); move and reorder;
+- autosave; atomic writes; user-readable errors; delete confirmations;
+- Markdown descriptions created and edited in the app;
+- manual reload of external changes.
 
-- create a new roadmap project;
-- open an existing roadmap project by selecting its folder;
-- work with one roadmap project at a time;
-- create, edit, and delete nodes;
-- define parent/child relationships between nodes;
-- save changes automatically;
-- create Markdown description files for nodes from inside the app;
-- edit node descriptions inside the app with a built-in Markdown editor;
-- manually reload the project to pick up external file changes.
+## MSP scope
+
+Stage 1 — tech debt: refactor hotspots, direct Rust tests, CI on macOS and Windows. No new user features.
+
+Stage 2 — MCP and agents (ADR 0010, 0017, 0018, 0019):
+
+- format v2: dependencies and blockers, acceptance criteria, due dates (visible in the UI), executors
+  (which model or person may do a node), status registry, plan/report links, gate settings;
+- MCP server bundled with the app: an agent can create a roadmap from an idea (2.1), improve an existing one (2.2),
+  and use it as a development plan with plans, reports, handoff and gates (2.3);
+- gates need a human by default; a project can let the agent pass them (automation);
+- the app and agents may write at the same time: changes on disk are detected, no silent loss.
+
+Stage 3 — UX/UI and QoL (ADR 0020, 0021, 0022):
+
+- new design; editable graph canvas (Miro-like) next to the tree; manual positions with auto-layout;
+- custom statuses with a 16-colour palette;
+- export: whole roadmap to HTML (full and clickable, or titles only); project zip export/import;
+- catalog of official roadmaps: find by title, download, start working;
+- recent projects, English UI, onboarding, keyboard navigation;
+- public release: GitHub Releases `.dmg` / `.msi`, licence.
 
 ## Data model
 
-### Roadmap shape
-
-In the MVP the roadmap is a tree:
-
-- each node has at most one parent;
-- nodes have parent/child relationships;
-- the visual layout is generated automatically.
-
-The architecture must allow the internal model to evolve into a directed graph later without a major rewrite.
-
-### Node fields (minimum)
-
-- `id`
-- `title`
-- `parentId`
-- `childrenIds`
-- `descriptionPath`
-- `status`
-- `createdAt`
-- `updatedAt`
-
-> Storage note (ADR 0005): `parentId` is derived in memory and is **not** written to
-> `roadmap.json`; links are stored only in the parent's `childrenIds` (plus top-level `rootIds`).
-
-### Node statuses (fixed in MVP)
-
-- `unstarted`
-- `in progress`
-- `paused`
-- `done`
+- Hierarchy is a tree (one parent). Graph needs are covered by `dependsOn` (ADR 0010).
+- Node fields: `id`, `title`, `childrenIds`, `descriptionPath`, `status`, `createdAt`, `updatedAt`
+  (+ v2 fields from ADR 0010). `parentId` is derived in memory, not stored (ADR 0005).
+- Statuses: fixed four in v1; a project registry with categories and colours in v2.
 
 ## Storage model
 
-- A roadmap project is a normal folder on the user's computer.
-- One roadmap JSON file is the structured source of truth.
-- One folder holds node description Markdown files.
-- Data stays transparent, portable, file-based.
-- No dependency on cloud services, accounts, or internet for the core workflow.
-
-## Description files
-
-- The app creates description files automatically.
-- Descriptions are edited inside the app.
-- External editing while the app is open is not a primary workflow.
-- If files change outside the app, the user explicitly reloads the project.
+- A roadmap project is a normal folder; `roadmap.json` is the structured source of truth.
+- Data stays transparent, portable, file-based. Canvas positions live in a separate `canvas.json`.
+- The core workflow needs no cloud services, accounts or internet. The only network feature is the official
+  catalog, used only on user action (ADR 0021).
 
 ## UX principles
 
-- One open roadmap project at a time.
-- Autosave by default.
-- Automatic node layout; no manual canvas positioning.
-- Optimize for structure and content editing.
-- Opening a project is folder-based, not single-file based.
+- One open project at a time; folder-based open/create; autosave.
+- Structure and content editing first; the canvas adds manual positioning, auto-layout stays available.
+- Agents are first-class editors, but the user stays in control: gates, backups, visible changes.
 
 ## Safety and error handling
 
-In scope:
+- Confirmation before destructive deletion; atomic writes; user-readable errors.
+- Path safety for every writer (app and MCP server).
+- Change detection between writers (ADR 0018); one backup before the first agent write of a session.
+- Imported zips and catalog downloads are validated before anything is written.
 
-- confirmation before destructive deletion where appropriate;
-- safe (atomic) writes to avoid corrupting JSON or Markdown files;
-- clear, user-readable error messages.
+## Out of scope for MSP
 
-Out of scope for MVP:
+Collaboration between people, accounts, cloud sync, multiple open projects, multiple parents, built-in agent runner,
+full undo/redo, auto-update, code signing / Homebrew, publishing to the catalog from the app, payments.
+These live in `docs/later.md`.
 
-- collaboration / multi-user;
-- multiple open projects;
-- manual node positioning;
-- custom statuses;
-- live sync of external file edits;
-- full undo/redo history;
-- backup/versioning as a feature;
-- advanced import/export.
+## Web (context only, not planned)
 
-## Future-facing constraints
-
-Do not block:
-
-- tree → directed graph;
-- import/export of project folders (important for v2);
-- richer interoperability around the JSON + Markdown format.
+After MSP the product is expected to move to the web, where people create and follow their own roadmaps, can
+sell them, and monetization is based on not completing a roadmap (a commitment the user loses if they miss it).
+Desktop stays free. Consequences for today: keep `src/domain/` platform-neutral, keep the format documented and
+versioned, keep due dates and acceptance criteria machine-readable. Ideas: `docs/later.md`, section «Web».
 
 ## One-sentence summary
 
-A local-first desktop app that visually edits roadmap projects stored as a JSON file plus linked Markdown notes inside a user-owned folder.
+A local-first desktop app that visually edits roadmap projects stored as JSON plus Markdown in a user-owned folder,
+and lets AI agents create, improve and execute them through a bundled MCP server.

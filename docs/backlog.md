@@ -1,28 +1,86 @@
-# Backlog
+# Backlog — путь к MSP (Minimum Selling Product)
 
-Frozen list for MVP. Agents never add rows — new ideas go to `docs/later.md`.
-Status flow: `todo` → `plan-review` → `approved` → `in-progress` → `code-review` → `done`.
+MVP закрыт: `docs/archive/mvp-backlog.md`, `docs/archive/mvp-done.md`.
+Финиш этого backlog — все пункты `docs/msp-done.md` отмечены → релиз **1.0.0**.
 
-Plan / Build: **C** = Claude Code, **K** = OpenCode + Kimi K2.7 Code, **M** = OpenCode + MiniMax M3 or weaker.
+Правила:
 
-| ID     | Task                                                                                                          | Plan | Build | Status |
-| ------ | ------------------------------------------------------------------------------------------------------------- | ---- | ----- | ------ |
-| T-000  | Toolchain: Rust, pnpm, Xcode CLT, `claude`, `opencode`                                                        | —    | user  | done   |
-| T-001  | Scaffold Tauri 2 app, React + TS template (`pnpm create tauri-app`), dev build runs                           | M    | M     | done   |
-| T-002  | ESLint + Prettier + Vitest + RTL, package.json scripts; real **Commands** in AGENTS.md                        | C    | K     | done   |
-| T-003  | JSON schema + `.md` location → ADR 0005                                                                       | C    | —     | done   |
-| T-004  | `src/domain/`: types, parent index, create/rename/delete/move node, validation (ADR 0005) + tests             | C    | K     | done   |
-| T-005  | Rust: open project folder, read/parse `roadmap.json`, path-safety helper + tests                              | C    | K     | done   |
-| T-006  | Rust: atomic write for JSON and `.md` + tests                                                                 | C    | K     | done   |
-| T-007  | Create new project (folder picker, initial `roadmap.json`, `descriptions/`)                                   | K    | K     | done   |
-| T-008  | UI: tree sidebar + details panel (ADR 0004)                                                                   | C    | K     | done   |
-| T-009  | UI: node CRUD, move to parent, status select                                                                  | K    | K     | done   |
-| T-010  | Fix DnD from T-009; Rust + storage: read / delete `descriptions/<id>.md` + tests                              | C    | K     | done   |
-| T-010b | UI: create description, CodeMirror editor + preview (ADR 0006), delete confirmation with file count           | C    | K     | done   |
-| T-011  | Autosave (debounced) with error display; предупреждение при закрытии с несохранёнными правками                | K    | K     | done   |
-| T-012  | Reload project from disk; invalid JSON on reload → autosave must not overwrite the file (T-005 risk, test it) | C    | M     | done   |
-| T-013  | User-readable errors pass (delete confirmation moved to T-010b)                                               | C    | M     | done   |
-| T-014  | macOS build `.app`/`.dmg`, README «Как установить», full manual run of `docs/mvp-done.md`                     | C    | M     | done   |
-| T-015  | Windows build (`.msi`/`.exe`) — method decided by user                                                        | C    | M     | done   |
+- Агенты не добавляют строки. Идеи и техдолг → `docs/later.md`, раздел «Входящие».
+- Этапы идут строго по порядку: задачу этапа N+1 не берут, пока не закрыт раздел этапа N в `docs/msp-done.md`.
+  Внутри этапа — по порядку строк, если в колонке «После» не указано иное.
+- Status flow: `todo` → `plan-review` → `approved` → `in-progress` → `code-review` → `done`.
+- Задачи с пометкой **UI:** перед планом требуют UI-бриф `docs/ui/<id>.md` (см. `docs/guide.md`, раздел 9).
+
+Plan — всегда Claude Code: **O** = Opus 5.5, **S** = Sonnet 5.5.
+Build — OpenCode Go (полная таблица, лимиты и замены — `docs/agents/workflow.md`):
+**DS** = DeepSeek V4 Pro, **K2** = Kimi K2.7 Code, **K3** = Kimi K3, **G** = GLM-5.3, **MM** = MiniMax M3,
+**user** = делает пользователь.
+
+## Этап 1 — техдолг и рефакторинг (версия 0.2)
+
+Цель: перед большими изменениями этапа 2 убрать hotspots, покрыть Rust прямыми тестами, включить CI.
+Поведение приложения для пользователя не меняется (кроме T-102, T-106).
+
+| ID    | Task                                                                                                                                                                    | Plan | Build | После | Status |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----- | ----- | ------ |
+| T-101 | Остатки шаблона: команда `greet`, `assets/react.svg`, имя пакета `tauri-app`, `description`/`authors` в `Cargo.toml`; плагин `opener` — решить в плане (нужен ли T-314) | S    | MM    |       | todo   |
+| T-102 | ADR 0015 «ошибка reload блокирует запись» + визуально отключать кнопки дерева/панели при `locked`                                                                       | S    | K2    |       | todo   |
+| T-103 | Разбить `useProject.ts` на под-хуки (загрузка/reload, автосохранение, описание) без изменения поведения; тесты до правки                                                | S    | K2    | T-102 | todo   |
+| T-104 | Разбить `App.tsx` на компоненты (баннеры, раскладка); упростить `fromRustError` в `projectStorage.ts`                                                                   | S    | K2    | T-103 | todo   |
+| T-105 | Rust `paths.rs`: разбить `validate_relative_path`, прямые unit-тесты (в т.ч. `\` и `/`, Windows-кейсы)                                                                  | S    | DS    |       | todo   |
+| T-106 | Rust `atomic.rs`: прямые unit-тесты; ограниченный повтор записи на Windows, когда файл занят другой программой                                                          | O    | DS    | T-105 | todo   |
+| T-107 | Rust `project.rs`: разбить на модули по командам, прямые unit-тесты                                                                                                     | S    | DS    | T-106 | todo   |
+| T-108 | Проверить предупреждение при закрытии при ошибке записи из-за занятого файла (ADR 0014 п.4); при пробеле — тест + фикс                                                  | S    | MM    |       | todo   |
+| T-109 | CI GitHub Actions на macOS + Windows: typecheck, lint, format:check, test, cargo fmt/clippy/test; отчёт coverage                                                        | S    | G     |       | todo   |
+| T-110 | ESLint `recommendedTypeChecked` + исправление найденного                                                                                                                | S    | K2    | T-109 | todo   |
+
+## Этап 2 — MCP и работа с агентами (версия 0.3)
+
+Цель: сценарии 2.1 (создать roadmap с нуля через агента), 2.2 (агент улучшает готовый roadmap),
+2.3 (агент ведёт разработку по roadmap как по backlog/plans/reports/handoff). ADR 0010, 0017, 0018, 0019.
+
+| ID    | Task                                                                                                                                                     | Plan | Build | После | Status |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----- | ----- | ------ |
+| T-201 | ADR 0010: типы формата v2 + `src/domain/migrations.ts` (v1→v2, чистая функция) + тесты                                                                   | O    | K2    |       | todo   |
+| T-202 | Открытие v1-проекта: диалог «обновить формат», копия `roadmap.v1.backup.json`, атомарная запись v2                                                       | S    | K2    | T-201 | todo   |
+| T-203 | Домен: `dependsOn`, `blocker`, `getReadiness`, валидация, удаление чистит `dependsOn` + тесты                                                            | S    | K2    | T-201 | todo   |
+| T-204 | Домен: реестр статусов (категория + цвет), операции со статусами, миграция статуса ноды + тесты                                                          | O    | K2    | T-201 | todo   |
+| T-205 | Домен: `acceptance`, `dueDate`, реестр `executors` + `executorIds`, `planPath`/`reportPath`, `settings.gates` + тесты                                    | S    | K2    | T-204 | todo   |
+| T-206 | Rust: ревизия файла (хеш) при записи, `CONFLICT`, уникальные имена temp (ADR 0018) + тесты                                                               | O    | DS    | T-107 | todo   |
+| T-207 | Rust: слежение за папкой проекта (`notify`), авто-reload без несохранённых правок, диалог конфликта при правках                                          | O    | DS    | T-206 | todo   |
+| T-208 | UI: «Зависит от» (выбор с поиском), блокер, бейджи готовности, фильтр «Готово / Ждёт / Заблокировано»                                                    | S    | K2    | T-203 | todo   |
+| T-209 | UI: чек-лист критериев приёмки, дедлайн (дерево + панель, просрочка цветом), исполнители, выбор статуса из реестра                                       | S    | K2    | T-205 | todo   |
+| T-210 | MCP: пакет `mcp/` (TS, `@modelcontextprotocol/server`), импорт `src/domain/`, Node-адаптер хранения по ADR 0009/0011/0018 + тесты                        | O    | DS    | T-206 | todo   |
+| T-211 | MCP: инструменты чтения — `open_project`, `get_roadmap`, `get_node`, `search_nodes`, `get_description`                                                   | S    | K2    | T-210 | todo   |
+| T-212 | MCP: инструменты записи (2.1/2.2) — `create_project`, `add_node`, `update_node`, `move_node`, `delete_node`, `write_description`; резервная копия сессии | O    | DS    | T-211 | todo   |
+| T-213 | MCP: workflow (2.3, ADR 0019) — `next_task`, `start_task`, `submit_plan`, `submit_report`, `write_handoff`, гейты; MCP-prompts                           | O    | DS    | T-212 | todo   |
+| T-214 | UI: план/отчёт ноды в панели, «Одобрить / Вернуть» для гейтов, переключатели гейтов проекта, просмотр `handoff.md`                                       | S    | K2    | T-213 | todo   |
+| T-215 | Сборка `roadmap-mcp` (`bun build --compile`) как sidecar Tauri (macOS arm64/x64, Windows x64); экран «Подключить агента» с командами                     | S    | G     | T-213 | todo   |
+| T-216 | Документация пользователя `docs/user/agents.md` (2.1/2.2/2.3) + пример цикла автоматизации `scripts/roadmap-loop.sh`                                     | S    | MM    | T-215 | todo   |
+| T-217 | Проверка на себе: одна задача этапа 3 проходит через roadmap-проект и MCP целиком (план → реализация → отчёт → handoff)                                  | S    | user  | T-216 | todo   |
+
+## Этап 3 — UX/UI, QoL и релиз (версия 0.4 → 1.0.0)
+
+Цель: дизайн, граф-холст, свои статусы, экспорт/импорт, каталог официальных roadmap, английский интерфейс,
+онбординг, публичный релиз. ADR 0020, 0021, 0022.
+
+| ID    | Task                                                                                                                                         | Plan | Build | После | Status |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----- | ----- | ------ |
+| T-301 | UI: дизайн-система (токены цвета/отступов/шрифта, палитра Miro 16), HTML-макеты ключевых экранов на согласование                             | S    | K3    |       | todo   |
+| T-302 | UI: применить дизайн к дереву, панели деталей, баннерам и диалогам                                                                           | S    | K2    | T-301 | todo   |
+| T-303 | UI: холст графа (ADR 0020) — React Flow, `canvas.json`, авто-раскладка, pan/zoom, выбор ↔ панель деталей                                     | O    | K3    | T-302 | todo   |
+| T-304 | UI: редактирование на холсте — создать ноду, связи «родитель»/«зависит от», перетаскивание, удаление с подтверждением                        | S    | K3    | T-303 | todo   |
+| T-305 | UI: редактор статусов — добавить/переименовать/упорядочить/удалить, цвет из 16, категория; удаление занятого → замена                        | S    | K2    | T-302 | todo   |
+| T-306 | Экспорт в HTML (ADR 0022): весь roadmap с описаниями и полями (кликабельно) или только названия; один файл                                   | S    | K2    | T-303 | todo   |
+| T-307 | Экспорт/импорт проекта zip (ADR 0022): защита от zip-slip, лимиты, импорт только в пустую папку, валидация + миграция                        | O    | DS    |       | todo   |
+| T-308 | Каталог официальных roadmap (ADR 0021): `index.json` с одного HTTPS-хоста, поиск по названию, загрузка → импорт T-307                        | O    | DS    | T-307 | todo   |
+| T-309 | Недавние проекты / автооткрытие последнего (ADR 0009) + запоминание ширины сайдбара                                                          | S    | K2    |       | todo   |
+| T-310 | UI: онбординг первого запуска — создать / открыть / из каталога                                                                              | S    | K2    | T-308 | todo   |
+| T-311 | Все UI-строки в `src/ui/strings.ts` (продолжение ADR 0016)                                                                                   | S    | MM    |       | todo   |
+| T-312 | Английский интерфейс: словарь EN + переключатель языка в настройках                                                                          | S    | K2    | T-311 | todo   |
+| T-313 | Клавиатура: навигация по дереву (ARIA `tree`), перенос/перестановка без мыши, ресайз сайдбара с клавиатуры                                   | S    | K2    | T-302 | todo   |
+| T-314 | Описание: клик по тексту → редактор, клик вне → просмотр; кликабельные ссылки с подтверждением открытия                                      | S    | K2    | T-302 | todo   |
+| T-315 | Публичный релиз: лицензия (`LICENSE`), финальные `productName`/`identifier`, workflow сборки `.dmg`/`.msi` по тегу в GitHub Releases, README | S    | G     | T-109 | todo   |
+| T-316 | Полный ручной прогон `docs/msp-done.md` на macOS и Windows, тег `v1.0.0`                                                                     | S    | user  | T-315 | todo   |
 
 Acceptance criteria for each task live in `docs/plans/<id>.md`.

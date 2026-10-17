@@ -1,7 +1,7 @@
 # Subagent and token budget policy
 
 Applies to every agent in this repo (Claude Code, OpenCode, any model).
-Reason: Claude Pro and the OpenCode subscription have shared, limited quotas. Subagents
+Reason: Claude Pro ($20) and OpenCode Go ($10) have shared, limited quotas (`docs/agents/workflow.md`). Subagents
 multiply usage: each one re-reads context and files from scratch.
 
 ## Rules
@@ -14,7 +14,7 @@ multiply usage: each one re-reads context and files from scratch.
 4. **Never delegate** planning, implementation, review, or debugging to a subagent.
 5. **Never run a subagent on a heavy model** (Opus, Sonnet, or similar frontier models).
 6. Prefer CodeGraph / Repowise MCP calls, grep/glob and targeted reads over any subagent.
-   MCP calls are not subagents (see AGENTS.md "Code intelligence").
+   MCP calls are not subagents (see `docs/agents/code-intelligence.md`).
 7. Do not re-read files already in context; do not print whole files back.
 8. Keep final reports ≤ 15 lines unless asked for detail.
 
